@@ -1,0 +1,514 @@
+<!-- #include virtual = "/header/asp_header.asp" -->
+<!-- #include virtual = "/header/session_check_header.asp" -->
+<!-- #include virtual = "/header/html_header.asp" -->
+<!-- #include virtual = "/header/layout_full_header.asp" -->
+
+<%
+call Menu_Top
+%>
+
+<%
+sub Menu_Top()
+%>
+<%
+	dim CNT1
+	dim CNT2
+
+	dim strMenu
+	dim arrMenu(20)
+
+	dim strMenuSub
+	dim arrMenuSub(20,20)
+	dim arrMenuSub_URL(20,20)
+	dim arrMenuSub_Authority(20,20)
+
+	dim strCurrentURL
+	dim CurrentCNT1
+	dim CurrentCNT2
+
+	if gM_ID = "smtech" then
+		arrMenu(0) = "(주)에스엠텍"
+		arrMenuSub(0,0) 			= "BOM조회"
+		arrMenuSub_URL(0,0) 		= "/bom/b_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,0)	= "-all-"
+		arrMenuSub(0,1) 			= "제원시트"
+		arrMenuSub_URL(0,1) 		= "/bom/b_parts_out_sheet.asp"
+		arrMenuSub_Authority(0,1)	= "-all-"
+		arrMenuSub(0,2) 			= "시방조회"
+		arrMenuSub_URL(0,2) 		= "/bom/new_bu_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,2)	= "-all-"
+	elseif gM_ID = "dstech" then
+		arrMenu(0) = "DSTECH"
+		arrMenuSub(0,0) 			= "BOM조회"
+		arrMenuSub_URL(0,0) 		= "/bom/b_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,0)	= "-all-"
+		arrMenuSub(0,1) 			= "제원시트"
+		arrMenuSub_URL(0,1) 		= "/bom/b_parts_out_sheet.asp"
+		arrMenuSub_Authority(0,1)	= "-all-"
+		arrMenuSub(0,2) 			= "시방조회"
+		arrMenuSub_URL(0,2) 		= "/bom/new_bu_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,2)	= "-all-"
+	elseif gM_ID = "hana" then 
+		arrMenu(0) = "하나전자"
+		arrMenuSub(0,0) 			= "BOM조회"
+		arrMenuSub_URL(0,0) 		= "/bom/b_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,0)	= "-all-"
+		arrMenuSub(0,1) 			= "제원시트"
+		arrMenuSub_URL(0,1) 		= "/bom/b_parts_out_sheet.asp?part=QC"
+		arrMenuSub_Authority(0,1)	= "-all-"
+		arrMenuSub(0,2) 			= "MAN실적관리"
+		arrMenuSub_URL(0,2)		= "/process_record/pr_simple_list.asp?s_pr_process=MAN&postback_yn=N"
+		arrMenuSub_Authority(0,2)	= "-all-"
+else
+		'공지사항
+		arrMenu(0) = "게시판"
+		arrMenuSub(0,0) 			= "공지사항"
+		arrMenuSub_URL(0,0) 		= "/notice/n_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(0,0)	= "-all-"
+		'arrMenuSub(0,1) 			= "에러수정요청"
+		'arrMenuSub_URL(0,1) 		= "/error_reporting/er_list.asp?postback_yn=Y"
+		'sarrMenuSub_Authority(0,1)	= "-all-"
+		
+		'인사
+		arrMenu(1) = "인사"
+		arrMenuSub(1,1) 			= "사원조회"
+		arrMenuSub_URL(1,1)			= "/member/m_list.asp?postback_yn=N"
+		arrMenuSub_Authority(1,1)	= "-kimys-shindk-shindh-@기획-"
+
+		'개발
+		arrMenu(2) = "개발팀"
+		arrMenuSub(2,0) 			= "BOM조회"
+		arrMenuSub_URL(2,0) 		= "/bom/b_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(2,0)	= "-all-"
+		arrMenuSub(2,1) 			= "시방조회"
+		arrMenuSub_URL(2,1) 		= "/bom/new_bu_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(2,1)	= "-all-"
+		arrMenuSub(2,2) 			= "판가조회"
+		arrMenuSub_URL(2,2) 		= "/bom/b_price_list.asp?postback_yn=N"
+		arrMenuSub_Authority(2,2)	= "-all-"
+		arrMenuSub(2,3) 			= "LG입고조회"
+		arrMenuSub_URL(2,3) 		= "/lg_receiving/lr_list.asp?postback_yn=N"
+		arrMenuSub_Authority(2,3)	= "-all-"
+		arrMenuSub(2,4) 			= "BOM비교1"
+		arrMenuSub_URL(2,4)			= "/bom/b_diff.asp?postback_yn=N"
+		arrMenuSub_Authority(2,4)	= "-all-"
+		'arrMenuSub(2,5) 			= "BOM비교2"
+		'arrMenuSub_URL(2,5)			= "/bom/b_diff_new.asp?postback_yn=N"
+		'arrMenuSub_Authority(2,5)	= "-all-"
+		
+		arrMenuSub(2,6) 			= "DESC정규화"
+		arrMenuSub_URL(2,6)			= "/bom/parts_desc_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(2,6)	= "-all-"
+		arrMenuSub(2,7) 			= "DESC순서관리"
+		arrMenuSub_URL(2,7)			= "/bom/parts_desc_sort_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(2,7)	= "-all-"
+		
+		'arrMenuSub(2,7) 			= "BOM 2 Excel"
+		'arrMenuSub_URL(2,7)			= "/bom/bom2excel.asp?postback_yn=Y"
+		'arrMenuSub_Authority(2,7)	= "-shindh-shindk-"
+	
+		'자재관리
+		'arrMenu(3) = "자재(구)"
+		arrMenuSub(3,0) 			= "부품정보"
+		arrMenuSub_URL(3,0) 		= "/parts/p_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,0)	= "-jungjw-shindk-kimdh-kimjw-"
+		arrMenuSub(3,1) 			= "재고관리"
+		arrMenuSub_URL(3,1) 		= "/parts_transaction/pt_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,1)	= "-jungjw-shindk-kimdh-kimjw-"
+		arrMenuSub(3,2) 			= "사급입고"
+		arrMenuSub_URL(3,2) 		= "/parts_incoming_lge/pil_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,2)	= "-jungjw-shindk-kimdh-kimjw-"
+		arrMenuSub(3,3) 			= "거래처관리"
+		arrMenuSub_URL(3,3) 		= "/partner/p_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,3)	= "-all-"
+		arrMenuSub(3,4) 			= "자재>소요량조회"
+		arrMenuSub_URL(3,4) 		= "/bom/b_parts_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,4)	= "-all-"
+		arrMenuSub(3,5) 			= "자재>소요량조회(복수부품)"
+		arrMenuSub_URL(3,5) 		= "/bom/b_parts_multi_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,5)	= "-all-"
+		arrMenuSub(3,6) 			= "FTA용제품조회"
+		arrMenuSub_URL(3,6) 		= "/bom/b_sub_priced_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,6)	= "-all-"
+		arrMenuSub(3,7) 			= "R부품조회"
+		arrMenuSub_URL(3,7) 		= "/bom/b_r_parts_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,7)	= "-all-"
+		arrMenuSub(3,8) 			= "R부품조회2"
+		arrMenuSub_URL(3,8) 		= "/bom/b_r_multi_parts_list.asp?postback_yn=N"
+		arrMenuSub_Authority(3,8)	= "-all-"
+		
+		'자재/구매
+		arrMenu(4) = "자재/구매"
+		arrMenuSub(4,0) 			= "자재리스트"
+		arrMenuSub_URL(4,0) 		= "/material/m_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,0)	= "-all-"
+		arrMenuSub(4,1) 			= "거래처관리"
+		arrMenuSub_URL(4,1) 		= "/partner/p_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,1)	= "-all-"
+		arrMenuSub(4,2) 			= "발주처리"
+		arrMenuSub_URL(4,2) 		= "/material/mo_frame.asp?postback_yn=Y&s_edit_mode_yn=checked"
+		arrMenuSub_Authority(4,2)	= "-all-"
+		arrMenuSub(4,3) 			= "입고처리"
+		arrMenuSub_URL(4,3) 		= "/material/mo_list_in.asp?postback_yn=Y&s_edit_mode_yn=checked"
+		arrMenuSub_Authority(4,3)	= "-all-"
+		arrMenuSub(4,4) 			= "자재출고"
+		arrMenuSub_URL(4,4) 		= "/material/mt_list_out.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,4)	= "-all-"
+		arrMenuSub(4,5) 			= "재고수정"
+		arrMenuSub_URL(4,5) 		= "/material/mt_list_update.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,5)	= "-all-"
+		arrMenuSub(4,6) 			= "재고조회"
+		arrMenuSub_URL(4,6) 		= "/material/mt_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,6)	= "-all-"
+		arrMenuSub(4,7) 			= "단가이력"
+		arrMenuSub_URL(4,7) 		= "/material/mpl_list.asp?postback_yn=Y&s_Diff=인상&s_MPL_Reg_Date=2012-11-29, "&date()
+		arrMenuSub_Authority(4,7)	= "-all-"
+		arrMenuSub(4,8) 			= "매직ERP"
+		arrMenuSub_URL(4,8) 		= "/material/m_magicerp_backup.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,8)	= "-all-"
+		arrMenuSub(4,9) 			= "업체별매입장(요약)"
+		arrMenuSub_URL(4,9) 		= "/material/mo_list_in_report_partner.asp?postback_yn=N"
+		arrMenuSub_Authority(4,9)	= "-all-"
+		arrMenuSub(4,10) 			= "사급가조회"
+		arrMenuSub_URL(4,10) 		= "/material/cosp_price_list.asp?postback_yn=N"
+		arrMenuSub_Authority(4,10)	= "-all-"
+		arrMenuSub(4,11) 			= "자재리스트(백업)"
+		arrMenuSub_URL(4,11) 		= "/material/bak_m_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(4,11)	= "-all-"
+	
+		'제조공용
+		arrMenu(7) = "제조공용"
+		arrMenuSub(7,0) 			= "재공재고조회"
+		arrMenuSub_URL(7,0) 		= "/bom/b_sub_list.asp?postback_yn=N"
+		arrMenuSub_Authority(7,0)	= "-all-"
+		arrMenuSub(7,1) 			= "제조생산일보"
+		arrMenuSub_URL(7,1)			= "/process_report/pr_print.asp?postback_yn=N"
+		arrMenuSub_Authority(7,1)	= "-all-"
+		arrMenuSub(7,3) 			= "(수삽)시간당생산량"
+		arrMenuSub_URL(7,3)			= "/Amount_Per_Hour_at_Man/ApH_list.asp?postback_yn=N"
+		arrMenuSub_Authority(7,3)	= "-all-"
+		arrMenuSub(7,4) 			= "PWS실적(투입)"
+		arrMenuSub_URL(7,4)			= "/PWS_Raw_Data/PRD_List_Input.asp?postback_yn=N"
+		arrMenuSub_Authority(7,4)	= "-all-"
+		arrMenuSub(7,5) 			= "PWS실적(포장)"
+		arrMenuSub_URL(7,5)			= "/PWS_Raw_Data/PRD_List_Box.asp?postback_yn=N"
+		arrMenuSub_Authority(7,5)	= "-all-"
+		arrMenuSub(7,6) 			= "재료비조회"
+		arrMenuSub_URL(7,6)			= "/Jeryobi/J_List.asp?postback_yn=N"
+		arrMenuSub_Authority(7,6)	= "-all-"
+
+		'제조IMD
+		arrMenu(8) = "IMD"
+		arrMenuSub(8,1) 			= "IMD실적관리"
+		arrMenuSub_URL(8,1)			= "/process_record/pr_simple_list.asp?s_pr_process=IMD&postback_yn=N"
+		arrMenuSub_Authority(8,1)	= "-all-"
+		arrMenuSub(8,2) 			= "IMD생산성분석"
+		arrMenuSub_URL(8,2)			= "/process_report/pr_list_fa.asp?s_pr_process=IMD&postback_yn=N"
+		arrMenuSub_Authority(8,2)	= "-all-"
+	
+		'제조SMD
+		arrMenu(9) = "SMD"
+		arrMenuSub(9,1) 			= "SMD실적관리"
+		arrMenuSub_URL(9,1)			= "/process_record/pr_simple_list.asp?s_pr_process=SMD&postback_yn=N"
+		arrMenuSub_Authority(9,1)	= "-all-"
+		arrMenuSub(9,2) 			= "SMD생산성분석"
+		arrMenuSub_URL(9,2)			= "/process_report/pr_list_fa.asp?s_pr_process=SMD&postback_yn=N"
+		arrMenuSub_Authority(9,2)	= "-all-"
+	
+		'제조MAN
+		arrMenu(10) = "수삽"
+		arrMenuSub(10,1) 			= "MAN실적관리"
+		arrMenuSub_URL(10,1)		= "/process_record/pr_simple_list.asp?s_pr_process=MAN&postback_yn=N"
+		arrMenuSub_Authority(10,1)	= "-all-"
+		arrMenuSub(10,2) 			= "MAN생산성분석"
+		arrMenuSub_URL(10,2)		= "/process_report/pr_summary_list.asp?s_pr_process=MAN&postback_yn=N"
+		arrMenuSub_Authority(10,2)	= "-all-"
+		arrMenuSub(10,3) 			= "MAN생산성분석(상세)"
+		arrMenuSub_URL(10,3)		= "/process_report/pr_list.asp?s_pr_process=MAN&postback_yn=N"
+		arrMenuSub_Authority(10,3)	= "-all-"
+	
+		'제조ASM
+		arrMenu(11) = "조립"
+		arrMenuSub(11,1) 			= "ASM실적관리"
+		arrMenuSub_URL(11,1)		= "/process_record/pr_simple_list.asp?s_pr_process=ASM&postback_yn=N"
+		arrMenuSub_Authority(11,1)	= "-all-"
+		arrMenuSub(11,2) 			= "ASM생산성분석"
+		arrMenuSub_URL(11,2)		= "/process_report/pr_summary_list.asp?s_pr_process=ASM&postback_yn=N"
+		arrMenuSub_Authority(11,2)	= "-all-"
+		arrMenuSub(11,3) 			= "ASM생산성분석(상세)"
+		arrMenuSub_URL(11,3)		= "/process_report/pr_list.asp?s_pr_process=ASM&postback_yn=N"
+		arrMenuSub_Authority(11,3)	= "-all-"
+	
+		'제조DLV
+		arrMenu(12) = "납품"
+		arrMenuSub(12,1) 			= "DLV실적관리"
+		arrMenuSub_URL(12,1)		= "/process_record/pr_simple_list.asp?s_pr_process=DLV&menucall_YN=Y&postback_yn=N"
+		arrMenuSub_Authority(12,1)	= "-all-"
+	
+		'영업
+		arrMenu(13) = "품질팀"
+		arrMenuSub(13,1) 			= "제원시트출력"
+		arrMenuSub_URL(13,1) 		= "/bom/b_parts_out_sheet.asp?part=QC"
+		arrMenuSub_Authority(13,1)	= "-all-"
+		
+		arrMenuSub(13,2) 			= "제원시트주기-품질"
+		arrMenuSub_URL(13,2)			= "/bom/partsoutsheetmemo/bpmq_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(13,2)	= "-all-"
+		arrMenuSub(13,3) 			= "제원시트주기-개발"
+		arrMenuSub_URL(13,3)			= "/bom/partsoutsheetmemo/bpmd_list.asp?postback_yn=Y"
+		arrMenuSub_Authority(13,3)	= "-all-"
+		
+	
+		arrMenu(14) = "생산현황"
+		arrMenuSub(14,1) 			= "생산계획/현황판"
+		arrMenuSub_URL(14,1)		= "/process_state/process_state_frame.asp"
+		arrMenuSub_Authority(14,1)	= "-all-"
+		arrMenuSub(14,2) 			= "시간당생산량 관리"
+		arrMenuSub_URL(14,2)		= "/process_state/bom_pph_list.asp?postback_yn=Y&s_edit_mode_yn=checked"
+		arrMenuSub_Authority(14,2)	= "-all-"
+		'arrMenuSub_URL(14,2)		= "/process_state/process_state_bom_st_list.asp?postback_yn=N"
+		'arrMenuSub_Authority(14,2)	= "-all-"
+		arrMenuSub(14,3) 			= "PWS기록"
+		arrMenuSub_URL(14,3)		= "/process_state/ps_raw_data_list.asp?postback_yn=N"
+		arrMenuSub_Authority(14,3)	= "-all-"
+		arrMenuSub(14,4) 			= "완성재고조회"
+		arrMenuSub_URL(14,4) 		= "/bom/b_sub_list.asp?postback_yn=N"
+		arrMenuSub_Authority(14,4)	= "-all-"
+		
+		if gM_ID = "shindk" then
+			arrMenu(15) = "현황판(new)"
+			arrMenuSub(15,1) 			= "현황판런쳐"
+			arrMenuSub_URL(15,1)		= "/new/status_monitor/index.asp"
+			arrMenuSub_Authority(15,1)	= "-all-"
+			arrMenuSub(15,2) 			= "계획관리"
+			arrMenuSub_URL(15,2)		= "/new/status_monitor/plan/p_manage.asp?postback_yn=Y&s_edit_mode_yn=checked"
+			arrMenuSub_Authority(15,2)	= "-all-"
+			arrMenuSub(15,3) 			= "모델별 UPH 관리"
+			arrMenuSub_URL(15,3)		= "/new/status_monitor/bom_uph/bu_list.asp?postback_yn=Y&s_edit_mode_yn=checked"
+			arrMenuSub_Authority(15,3)	= "-all-"
+			arrMenuSub(15,4) 			= "라인의 상태/효율 관리"
+			arrMenuSub_URL(15,4)		= "/new/status_monitor/line_info/li_list.asp?postback_yn=Y&s_edit_mode_yn=checked"
+			arrMenuSub_Authority(15,4)	= "-all-"
+			if gM_ID = "shindk" then
+				arrMenuSub(15,5) 			= "[개발용]테스터"
+				arrMenuSub_URL(15,5)		= "/new/status_monitor/barcode2db_process/barcode2db_process_tester.asp"
+				arrMenuSub_Authority(15,5)	= "-all-"
+				arrMenuSub(15,6) 			= "[개발용]에러목록"
+				arrMenuSub_URL(15,6)		= "http://th.msekorea.com/new/status_monitor/barcode2db_error/barcode2db_error_select.asp"
+				arrMenuSub_Authority(15,6)	= "-all-"
+			end if
+		end if
+		
+		arrMenu(16) = "작업지도서"
+		arrMenuSub(16,1) 			= "작업지도서"
+		arrMenuSub_URL(16,1)		= "/workguide/workguide.asp?postback_yn=N"
+		arrMenuSub_Authority(16,1)	= "-all-"
+		
+		if gM_ID = "shindk" then
+			arrMenu(17) = "NEW"
+			arrMenuSub(17,1) 			= "기타조회"
+			arrMenuSub_URL(17,1)		= "/Custom_Query/cq_list.asp?postback_yn=N"
+			arrMenuSub_Authority(17,1)	= "-all-"
+			arrMenuSub(17,2) 			= "BOM업그레이드"
+			arrMenuSub_URL(17,2)		= "/bom_upgrade/bu_list.asp?postback_yn=N"
+			arrMenuSub_Authority(17,2)	= "-all-"
+			arrMenuSub(17,3) 			= "BOM OPT"
+			arrMenuSub_URL(17,3)		= "/bom/b_optimize_manual.asp"
+			arrMenuSub_Authority(17,3)	= "-all-"
+		end if
+		
+		arrMenu(18) = "기타"
+		arrMenuSub(18,0) 			= "kr.msekorea.com"
+		arrMenuSub_URL(18,0) 		= "p>kr.msekorea.com/index.asp"
+		arrMenuSub_Authority(18,0)	= "-all-"
+		arrMenuSub(18,1) 			= "Smart MOM"
+		arrMenuSub_URL(18,1) 		= "p>kr.msekorea.com:8100/TU_Platform/login.html"
+		arrMenuSub_Authority(18,1)	= "-all-"
+		arrMenuSub(18,2) 			= "th.msekorea.com"
+		arrMenuSub_URL(18,2) 		= "p>th.msekorea.com"
+		arrMenuSub_Authority(18,2)	= "-all-"
+		arrMenuSub(18,3) 			= "thold.msekorea.com"
+		arrMenuSub_URL(18,3) 		= "p>thold.msekorea.com"
+		arrMenuSub_Authority(18,3)	= "-all-"
+		
+		strMenu = ""
+		strMenuSub = ""
+	end if
+
+%>
+<script language="javascript">
+var CurrentCNT1;
+var CurrentCNT2;
+<%
+dim strURL
+strURL = lcase(Request("strURL"))
+for CNT1=0 to ubound(arrMenuSub_URL,1)
+	for CNT2=0 to ubound(arrMenuSub_URL,2)
+		if arrMenuSub_URL(CNT1,CNT2) <> "" then
+			if instr(strURL,lcase(arrMenuSub_URL(CNT1,CNT2))) > 0 then
+				CurrentCNT1 = CNT1
+				CurrentCNT2 = CNT2
+%>
+CurrentCNT1 = "<%=CNT1%>";
+CurrentCNT2	= "<%=CNT2%>";
+<%
+			end if
+		end if
+	next
+next
+%>
+</script>
+<%
+	for CNT1=0 to ubound(arrMenu)
+		if arrMenu(CNT1) <> "" then
+			if cstr(CurrentCNT1) = cstr(CNT1) then
+				strMenu = strMenu & "<span style='cursor:hand; font-face:돋움; font-size:12px; color:#002066;' onclick=""javascript:OnClickMenu('"&CNT1&"')"" onmouseover=""this.style.textDecoration='underline'"" onmouseout=""this.style.textDecoration='none'""><b>" & arrMenu(CNT1) & "</b></span> | "
+			else
+				strMenu = strMenu & "<span style='cursor:hand; font-face:돋움; font-size:12px; color:#002066;' onclick=""javascript:OnClickMenu('"&CNT1&"')"" onmouseover=""this.style.textDecoration='underline'"" onmouseout=""this.style.textDecoration='none'"">" & arrMenu(CNT1) & "</span> | "
+			end if
+		end if
+
+		strMenuSub = strMenuSub & "<div id='MenuSub_"&CNT1&"'>"
+		for CNT2=0 to ubound(arrMenuSub)
+			if arrMenuSub(CNT1,CNT2) <> "" then
+				
+				
+				
+				
+				if cstr(CurrentCNT1) = cstr(CNT1) and cstr(CurrentCNT2) = cstr(CNT2) then	
+					arrMenuSub(CNT1,CNT2) = "<b>"&arrMenuSub(CNT1,CNT2)&"</b>"
+				end if
+				
+				if left(arrMenuSub_URL(CNT1,CNT2),2)="p>" then
+					arrMenuSub_URL(CNT1,CNT2) = replace(arrMenuSub_URL(CNT1,CNT2),"p>","http://")
+					strMenuSub = strMenuSub & "<span style='cursor:hand; font-face:돋움; font-size:12px; color:#002066;' onclick=""javascript:window.open('" & arrMenuSub_URL(CNT1,CNT2) & "');"" onmouseover=""this.style.textDecoration='underline'"" onmouseout=""this.style.textDecoration='none'"">" & arrMenuSub(CNT1,CNT2) & "</span> | "
+				else
+					strMenuSub = strMenuSub & "<span style='cursor:hand; font-face:돋움; font-size:12px; color:#002066;' onclick=""javascript:frameMain_Change('" & Server.URLEncode(arrMenuSub_URL(CNT1,CNT2)) & "','" & arrMenuSub_Authority(CNT1,CNT2) & "')"" onmouseover=""this.style.textDecoration='underline'"" onmouseout=""this.style.textDecoration='none'"">" & arrMenuSub(CNT1,CNT2) & "</span> | "
+				end if
+			end if
+		next
+		if right(strMenuSub,3) = " | " then
+			strMenuSub = left(strMenuSub,len(strMenuSub)-3)
+		end if
+		strMenuSub = strMenuSub & "</div>"
+	next
+	if right(strMenu,3) = " | " then
+		strMenu = left(strMenu,len(strMenu)-3)
+	end if
+%>
+
+
+
+<script language="javascript">
+function OnClickMenu(nMenu)
+{
+	var strDIV;
+
+	for(var cnt1=0; cnt1<<%=ubound(arrMenu)%>; cnt1++)
+	{
+		strDIV = eval("MenuSub_"+cnt1);
+		strDIV.style.display = "none";
+	}
+
+	if (nMenu != "")
+	{
+		strDIV = eval("MenuSub_"+nMenu);
+		strDIV.style.display = "block";
+	}
+}
+
+function frameMain_Change(strURL,strAuthority)
+{
+	if (strAuthority == "-all-")
+	{
+		if(	strURL == "<%=Server.URLEncode("/lge_plan/lp_view_summary.asp")%>" ||
+			strURL == "<%=Server.URLEncode("/lge_plan/lp_view_summary_parts.asp")%>" ||
+			strURL == "<%=Server.URLEncode("/lge_plan/lp_view_summary_price.asp")%>"
+			)
+		{
+			alert("시간이 1분 내외로 소요될 수 있습니다.\n확인을 클릭하신 후 잠시 기다려주시기 바랍니다.");
+		}
+		parent.location.href='/index.asp?strURL='+strURL;
+	}
+	else if ( strAuthority.indexOf('<%=gM_ID%>') > -1 )
+	{
+		parent.location.href='/index.asp?strURL='+strURL;
+	}
+	else if ( strAuthority.indexOf('@<%=gM_Part%>') > -1 )
+	{
+		parent.location.href='/index.asp?strURL='+strURL;
+	}
+	else
+	{
+		alert("권한이 없습니다.");
+		return false;
+	}
+}
+</script>
+
+<table width=100% height=41px border=0 cellpadding=0 cellspacing=0>
+<tr>
+	<td width=886px height=41px background="/img/Top_Bar_Line.jpg" align=left><img src="/img/blank.gif" width=200px height=41px style="cursor:hand" onclick="javascript:parent.location.href='/index.asp'"></td>
+	<td height=41px background="/img/Top_Bar_Line_Extend.jpg"><%if gM_ID = "shindk" then%><%=request.servervariables("REMOTE_ADDR")%><%end if%><img src="/img/blank.gif" width=1px height=1px></td>
+	<td width=215px height=41px background="/img/Top_Bar_Line_Red.jpg" align=right valign=top><img src="/img/blank.gif" width=1px height=9px><br><img src="/img/Top_Bar_LGE_Logo.gif"><img src="/img/blank.gif" width=10px height=1px></td>
+</tr>
+<tr height=1px>
+	<td colspan=3 bgcolor="#666666"></td>
+</tr>
+</table>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr bgcolor="#eeeeee" height=23px valign=top>
+	<td width=10px><img src="/img/blank.gif" width=10px height=1px></td>
+	<td style="font-face:돋움; font-size:12px; color:#002066;" align=left>
+		<img src="/img/blank.gif" width=1px height=4px><br>
+<%
+	response.write strMenu
+%>
+	</td>
+	<td align=right style="font-face:돋움; font-size:12px; color:#002066;" width=150>
+		<img src="/img/blank.gif" width=1px height=4px><br>
+		<span style="cursor:hand; font-face:돋움; font-size:12px; color:#002066;" onclick="javascript:parent.location.href='/member/m_logout_action.asp'" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">로그아웃</span>
+		 |
+		<span style="cursor:hand; font-face:돋움; font-size:12px; color:#002066;" onclick="javascript:parent.location.href='/index.asp?strURL=<%=Server.URLEncode("/member/m_edit_form.asp")%>'" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">정보수정</span>
+	</td>
+	<td width=10px><img src="/img/blank.gif" width=10px height=1px></td>
+</tr>
+</table>
+<table width=100% border=0 cellpadding=0 cellspacing=0>
+<tr bgcolor="#cfcfcf">
+	<td width=10px><img src="/img/blank.gif" width=10px height=1px></td>
+	<td align=left>
+		<img src="/img/blank.gif" width=1px height=4px><br>
+<%
+	response.write strMenuSub
+%>
+	</td>
+</tr>
+</table>
+<table width=100% height=30px border=0 cellpadding=0 cellspacing=0>
+<tr bgcolor="#cfcfcf">
+	<td width=100%><img src="/img/blank.gif" width=100% height=1px></td>
+</tr>
+</table>
+
+
+
+
+<script language="javascript">
+
+if(typeof(CurrentCNT1)=="string")
+{
+	OnClickMenu(CurrentCNT1);
+}
+else
+{
+	OnClickMenu('');
+}
+
+</script>
+
+<%
+end sub
+%>
+<!-- #include virtual = "/header/html_tail.asp" -->
+<!-- #include virtual = "/header/session_check_tail.asp" -->

@@ -1,0 +1,96 @@
+body, td, div, form, center, pre, blockquote {font-size:9pt;font-family:±¼¸²;color:#333333;}
+input, textarea {border:1px solid #999999;font-size:9pt;font-family:±¼¸²;color:#333333;background-color:#FFFFD7}
+
+IMG {border: none;} 
+
+TD {line-height:140%}
+
+A:link    {color:#333333;text-decoration:none;font-size:11px;font-family:±¼¸²}
+A:visited {color:#333333;text-decoration:none;font-size:11px;font-family:±¼¸²}
+A:active  {color:#333333;text-decoration:none;font-size:11px;font-family:±¼¸²}
+A:hover  {color:#333333;text-decoration:underline;font-size:11px;font-family:±¼¸²}
+
+.submit {border:1px solid #999999;font-size:9pt;color:#333333;background-color:#EEEEEE;height:19px}
+.button {border:1px solid #999999;font-size:9pt;color:#333333;background-color:#EEEEEE;height:19px}
+
+.thm7pt {font-family:tahoma;font-size:7pt}
+
+.ment {border:1px solid e7e7e7; background-color:#fafafa; font-size:9pt; table-layout:fixed}
+.ment_text {color:#666666;font-size:9pt;line-height:140%;padding:10px;}
+
+.line1 {background-color:#CCCCCC; padding:0}
+.line2 {background-color:#EEEEEE; padding:0}
+
+body
+{
+    text-align:center;
+}
+body table
+{
+    text-align:center;
+}
+
+.mini_board_tr {background-color:#ffffff; font-size:9pt;}
+.mini_board_td {color:#333333;font-size:9pt;text-decoration:none;}
+.mini_board_line {border-bottom-style:solid; border-bottom-color:#eeeeee; border-bottom-width:1px;}
+
+.board_title_tr {height:28px}
+.board_title_td {color:#666666;font-weight:bold;font-size:9pt}
+.board_tr_0 {background-color:#FAFAFA; height:25px; font-size:9pt;}
+.board_tr_1 {background-color:#FFFFFF; height:25px; font-size:9pt;}
+.board_td_0 {color:#333333;font-size:9pt;text-decoration:none;text-decoration:none}
+.board_td_1 {font-family:tahoma;color:#333333;font-size:8pt;text-decoration:none}
+.board_td_2 {background-color:#FAFAFA; height:25px; font-size:9pt;}
+.board_td_3 {background-color:#FFFFFF; height:25px; font-size:9pt;}
+
+.font_0 {color:#333333;font-size:9pt;text-decoration:none;}
+.font_1 {font-family:tahoma;color:#333333;font-size:8pt;text-decoration:none}
+.font_2 {font-family:tahoma;color:dimgray;font-size:9pt;text-decoration:none}
+.font_3 {font-family:tahoma;color:red;font-size:9pt;text-decoration:none}
+
+.Path_Area A:link    {color:#333333;text-decoration:none;}
+.Path_Area A:visited {color:#333333;text-decoration:none;}
+.Path_Area A:active  {color:#cc0000;text-decoration:none;}
+.Path_Area A:hover   {color:#cc0000;text-decoration:underline;}
+
+.LGE_Plan td {font-size:11px;font-family:±¼¸²;color:#333333;}
+.MSE_Plan_Editor {font-size:11px;font-family:arial;color:#333333;}
+
+.MSE_Plan_Input {width:28px;border:none;font-size:10px;font-family:arial;color:#333333;background-color:#FFFFD7;text-align:center}
+
+.BLANK {width:20px;font-size:10px;font-family:arial;color:white;}
+.LGE_Due {width:20px;font-size:10px;font-family:arial;}
+.IMD {width:20px;font-size:10px;font-family:arial;color:white;background-color:red}
+.SMD {width:20px;font-size:10px;font-family:arial;color:white;background-color:green}
+.MAN {width:20px;font-size:10px;font-family:arial;color:white;background-color:blue}
+.ASM {width:20px;font-size:10px;font-family:arial;color:white;background-color:#7306C6}
+.DLV {width:20px;font-size:10px;font-family:arial;color:white;background-color:dimgray}
+
+.Common_Edit input, textarea {border:1px solid #999999;font-size:11px;font-family:±¼¸²;color:#333333;background-color:#FFFFD7}
+
+.MSE_Plan td {font-size:10px;font-family:arial;color:#333333;}
+.MSE_Plan input {border:1px solid #999999;font-size:10px;font-family:arial;color:#333333;background-color:#FFFFD7;margin-top:3px;padding-top:3px}
+.MSE_Plan select {border:1px solid #999999;font-size:10px;font-family:arial;color:#333333;background-color:#FFFFD7;margin-top:3px;padding-top:3px}
+.MSE_Plan option {border:1px solid #999999;font-size:10px;font-family:arial;color:#333333;background-color:#FFFFD7;margin-top:3px;padding-top:3px}
+
+.Common_List {font-size:11px;font-family:±¼¸²;color:#333333;}
+
+.Common_List input, textarea, select, option{border:0px solid #999999;font-size:11px;font-family:±¼¸²;color:#333333;background-color:#FFFFD7}
+
+.Common_List_Reg_Form input, textarea {border:0px solid #999999;font-size:11px;font-family:±¼¸²;color:#333333;background-color:#FFFFD7}
+
+.Common_List_NonEdit {border:0px solid #999999;font-size:11px;font-family:±¼¸²;color:#333333;}
+
+.pi_print_1 td {font-size:13px;font-family:±¼¸²;color:#000000;font-weight:bold;}
+.pi_print_2 td {font-size:11px;font-family:±¼¸²;color:#000000;font-weight:bold;}
+
+.Common_Display_Summary {font-size:12px;font-family:±¼¸²;color:darkblue;font-weight:none;}
+
+.PR_Print td {font-size:10px;font-family:µ¸¿ò;color:#333333;}
+
+.space { background:#FFFFFF;float:left;margin:0;padding:0;cursor:default; }
+.bar { background:#000000;float:left;margin:0;padding:0;cursor:default; }
+.bartext { clear:both;font-family:Fixedsys,Arial;font-size:12px;cursor:default; }
+
+
+

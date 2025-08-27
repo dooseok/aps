@@ -1,0 +1,301 @@
+<!-- #include Virtual = "/header/asp_header_longwait.asp" -->
+<!-- #include Virtual = "/header/db_header.asp" -->
+
+<!-- #include Virtual = "/bom/new_bu_file_partno_update.asp" -->
+ 
+<form name='frmErrorRedirect' action='new_bu_reg_form.asp' method=post>
+</form>
+
+<%
+rem 변수선언
+dim SQL
+dim RS1
+dim UpLoad
+
+dim BU_Code
+
+dim BU_LG_Part
+dim BU_LG_Staff
+dim BU_Eco_No
+dim BU_Sibang_No
+dim BU_Parts_PNO
+dim BU_Last_Use_Date
+
+dim BOM_B_D_No
+dim BU_Content
+dim BU_Receive_Date
+dim BU_Apply_Date
+
+dim BU_MSE_LG
+dim BU_Link_YN
+
+dim BU_File_PartNo
+dim BU_File_1
+dim BU_File_2
+dim BU_File_3
+dim BU_File_4
+dim BU_File_5
+dim Member_M_ID
+dim BU_Type_SW
+dim BU_Type_HW
+dim BU_Type_REAL
+dim BU_Type_SAMPLE
+dim BU_Type
+
+dim arrBU_Code
+dim cntBU_Code
+
+dim temp
+dim strError
+dim URL_Prev
+dim URL_Next
+
+rem 객체선언
+Set RS1		= Server.CreateObject("ADODB.RecordSet")
+Set UpLoad	= Server.CreateObject("Dext.FileUpLoad")
+
+rem 업로드 될 물리적 경로지정
+UpLoad.DefaultPath = DefaultPath_BOM_Update
+UpLoad.MaxFileLen = (1024 * 1024 * 50)
+
+URL_Prev	= UpLoad("URL_Prev")
+URL_Next	= UpLoad("URL_Next")
+
+rem 업로드 될 파일 체크
+if trim(UpLoad("BU_File_PartNo")) <> "" then
+	if UpLoad("BU_File_PartNo").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일(품번)은 50메가까지 업로드 가능합니다.\n"
+%><script>alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+if trim(UpLoad("BU_File_1")) <> "" then
+	if UpLoad("BU_File_1").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일1은 50메가까지 업로드 가능합니다.\n"
+%><script>alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+if trim(UpLoad("BU_File_2")) <> "" then
+	if UpLoad("BU_File_2").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일2는 50메가까지 업로드 가능합니다.\n"
+%><script>alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+if trim(UpLoad("BU_File_3")) <> "" then
+	if UpLoad("BU_File_3").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일3은 50메가까지 업로드 가능합니다.\n"
+%><script language="javascript">alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+if trim(UpLoad("BU_File_4")) <> "" then
+	if UpLoad("BU_File_4").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일4는 50메가까지 업로드 가능합니다.\n"
+%><script>alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+if trim(UpLoad("BU_File_5")) <> "" then
+	if UpLoad("BU_File_5").FileLen > UpLoad.MaxFileLen then '200메가 이하인지 체크
+		strError = "파일5는 50메가까지 업로드 가능합니다.\n"
+%><script>alert("<%=strError%>");frmErrorRedirect.submit();</script><%
+		response.end
+	end if
+end if
+
+rem 에러메세지가 있을 경우 실행안됨
+if strError = "" then
+	'업로드작업
+	if trim(UpLoad("BU_File_PartNo")) <> "" then
+		BU_File_PartNo = UpLoad("BU_File_PartNo").Save(,False)
+	end if
+	if trim(UpLoad("BU_File_1")) <> "" then
+		BU_File_1 = UpLoad("BU_File_1").Save(,False)
+	end if
+	if trim(UpLoad("BU_File_2")) <> "" then
+		BU_File_2 = UpLoad("BU_File_2").Save(,False)
+	end if
+	if trim(UpLoad("BU_File_3")) <> "" then
+		BU_File_3 = UpLoad("BU_File_3").Save(,False)
+	end if
+	if trim(UpLoad("BU_File_4")) <> "" then
+		BU_File_4 = UpLoad("BU_File_4").Save(,False)
+	end if
+	if trim(UpLoad("BU_File_5")) <> "" then
+		BU_File_5 = UpLoad("BU_File_5").Save(,False)
+	end if
+	
+	BU_LG_Part		= Trim(UpLoad("BU_LG_Part"))
+	BU_LG_Staff		= Trim(UpLoad("BU_LG_Staff"))
+	BU_Eco_No		= Trim(UpLoad("BU_Eco_No"))
+	BU_Sibang_No	= Trim(UpLoad("BU_Sibang_No"))
+	BU_Parts_PNO	= Trim(UpLoad("BU_Parts_PNO"))
+	BU_Last_Use_Date= Trim(UpLoad("BU_Last_Use_Date"))
+	
+	BOM_B_D_No		= Trim(UpLoad("BOM_B_D_No"))
+	BU_Content		= Trim(UpLoad("BU_Content"))
+	BU_Receive_Date	= Trim(UpLoad("BU_Receive_Date"))
+	BU_Apply_Date	= Trim(UpLoad("BU_Apply_Date"))
+	
+	BU_MSE_LG	= Trim(UpLoad("BU_MSE_LG"))
+	BU_Link_YN	= Trim(UpLoad("BU_Link_YN"))
+	
+	BU_File_PartNo	= Replace(BU_File_PartNo,DefaultPath_BOM_Update,"")
+	BU_File_1		= Replace(BU_File_1,DefaultPath_BOM_Update,"")
+	BU_File_2		= Replace(BU_File_2,DefaultPath_BOM_Update,"")
+	BU_File_3		= Replace(BU_File_3,DefaultPath_BOM_Update,"")
+	BU_File_4		= Replace(BU_File_4,DefaultPath_BOM_Update,"")
+	BU_File_5		= Replace(BU_File_5,DefaultPath_BOM_Update,"")
+	Member_M_ID		= gM_ID
+	BU_Type_SW	= Trim(UpLoad("BU_Type_SW"))
+	BU_Type_HW	= Trim(UpLoad("BU_Type_HW"))
+	BU_Type_REAL	= Trim(UpLoad("BU_Type_REAL"))
+	BU_Type_SAMPLE	= Trim(UpLoad("BU_Type_SAMPLE"))
+	
+	if BU_Type_SW = "Y" then
+		BU_Type = BU_Type & "S/W-"
+	end if
+	if BU_Type_HW = "Y" then
+		BU_Type = BU_Type & "H/W-"
+	end if
+	if BU_Type_REAL = "Y" then
+		BU_Type = BU_Type & "현실화-"
+	end if
+	if BU_Type_SAMPLE = "Y" then
+		BU_Type = BU_Type & "샘플폐기-"
+	end if
+
+	SQL = "select max(convert(integer,right(bu_code,3))) from tbBOM_Update_New where '20'+substring(BU_Code,3,5)+'-'+substring(BU_Code,8,2) = '"&date()&"'"
+	RS1.Open SQL,sys_DBCon
+	if RS1.Eof or RS1.Bof then
+		cntBU_Code = 0
+	elseif isnull(RS1(0)) then
+		cntBU_Code = 0
+	elseif not(isnumeric(RS1(0))) then
+		cntBU_code = 0
+	else	
+		cntBU_Code = RS1(0)
+	end if
+	RS1.Close
+	cntBU_Code = cntBU_Code + 1
+	if len(cntBU_Code)=1 then
+		cntBU_Code = "00" & cntBU_Code
+	elseif len(cntBU_Code)=2 then
+		cntBU_Code = "0" & cntBU_Code
+	end if
+	
+	BU_Code = "RS" & mid(date(),3,5) & right(date(),2) & "-" & cntBU_Code
+	rem DB 업데이트
+	RS1.Open "tbBOM_Update_New",sys_DBConString,3,2,2
+	with RS1
+		.AddNew
+		.Fields("BU_Code")			= BU_Code
+		
+		.Fields("BU_LG_Part")		= BU_LG_Part
+		.Fields("BU_LG_Staff")		= BU_LG_Staff
+		.Fields("BU_Eco_No")		= BU_Eco_No
+		.Fields("BU_Sibang_No")		= BU_Sibang_No
+		.Fields("BU_Parts_PNO")		= BU_Parts_PNO
+		.Fields("BU_Last_Use_Date")	= BU_Last_Use_Date
+		
+		.Fields("BOM_B_D_No")		= BOM_B_D_No
+		.Fields("BU_Content")		= BU_Content
+		If BU_Receive_Date <> "" then
+			.Fields("BU_Receive_Date")	= BU_Receive_Date
+		End If
+		If BU_Apply_Date <> "" then
+			.Fields("BU_Apply_Date")	= BU_Apply_Date
+		End If
+		.Fields("BU_MSE_LG")		= BU_MSE_LG
+		.Fields("BU_Link_YN")		= BU_Link_YN
+		.Fields("BU_File_PartNo")	= BU_File_PartNo
+		.Fields("BU_File_1")		= BU_File_1
+		.Fields("BU_File_2")		= BU_File_2
+		.Fields("BU_File_3")		= BU_File_3
+		.Fields("BU_File_4")		= BU_File_4
+		.Fields("BU_File_5")		= BU_File_5
+		.Fields("BU_Type")			= BU_Type
+		.Fields("Member_M_ID")		= Member_M_ID
+		.Fields("BU_RnD_Check")		= "미확인"
+		.Fields("BU_JaJe_Check")	= "미확인"
+		.Fields("BU_IMT_Check")		= "미확인"
+		.Fields("BU_SMT_Check")		= "미확인"
+		.Fields("BU_JeJo2_Check")	= "미확인"
+		.Fields("BU_JeJo3_Check")	= "미확인"
+		.Fields("BU_IQC_Check")		= "미확인"
+		.Fields("BU_PCBA_QC_Check")	= "미확인"
+		.Fields("BU_CBOX_QC_Check")	= "미확인"
+		.Fields("BU_SPMK_Check")	= "미확인"
+		.Fields("BU_DLV_Check")		= "미확인"
+		.Fields("BU_Price_Check")	= "미확인"
+		.Fields("BU_OTP_Check")		= "미확인"
+		.Fields("BU_Eng_Check")		= "미확인"
+		.Fields("BU_SMTech_Check")	= "미확인"
+		.Fields("BU_DSTech_Check")	= "미확인"
+		.Update
+		.Close
+	end with
+	
+	rem DB 업데이트
+	RS1.Open "tbNotice",sys_DBConString,3,2,2
+	with RS1
+		.AddNew
+		if BOM_B_D_No <> "" then
+			.Fields("N_Title")			= BOM_B_D_No & "에 대한 시방이 등록되었습니다."
+			.Fields("N_Content")		= BU_Content
+		else
+			.Fields("N_Title")			= "시방이 등록되었습니다."
+			.Fields("N_Content")		= BU_Content
+		end if
+		
+		.Fields("N_Reg_Date")		= date()
+		.Fields("N_Edit_Date")		= date()
+		.Fields("N_File_1")			= ""
+		.Fields("N_File_2")			= ""
+		.Fields("N_File_3")			= ""
+		.Fields("Member_M_ID")		= Member_M_ID
+		
+		.Update
+		.Close
+	end with
+end if
+
+
+if BU_File_PartNo <> "" then
+	call BU_File_PartNo_Update(BU_Code, BU_File_PartNo)
+end if		
+
+rem 객체 해제
+set UpLoad	= nothing
+Set RS1		= nothing
+%>
+
+<%
+dim Request_Fields
+dim strRequestForm
+dim strRequestQueryString
+for each Request_Fields in Request.Form
+	if lcase(left(Request_Fields,2))="s_" then
+		strRequestForm = strRequestForm & "<input type='hidden' name='"&Request_Fields&"' value='"&Request(Request_Fields)&"'>" &vbcrlf
+	end if
+next
+for each Request_Fields in Request.QueryString
+	if lcase(left(Request_Fields,2))="s_" then
+		strRequestForm = strRequestForm & "<input type='hidden' name='"&Request_Fields&"' value='"&Request(Request_Fields)&"'>" &vbcrlf
+	end if
+next
+
+%>
+<form name="frmRedirect" action="new_bu_list.asp" method=post>
+<%
+response.write strRequestForm
+%>
+</form>
+
+<script language="javascript">
+frmRedirect.submit();
+</script>
+
+<!-- #include Virtual = "/header/db_tail.asp" -->

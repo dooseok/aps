@@ -1,0 +1,585 @@
+<!-- #include Virtual = "/header/asp_header_longwait.asp" -->
+<!-- #include virtual = "/header/db_header.asp" -->
+<!-- #include virtual = "/header/html_header.asp" -->
+<!-- #include virtual = "/header/layout_header.asp" -->
+<!-- #include virtual = "/function/inc_share_function.asp" -->
+ 
+<%
+Dim RS1
+Dim SQL
+
+dim strError
+
+Dim strEdit_Header
+
+
+dim B_Code
+dim Title
+dim URL_Action
+dim URL_Prev
+dim URL_Next
+dim URL_List
+dim Form_Type
+dim Form_Name
+dim ColumBU_Width
+dim Value_Width
+
+dim BU_LG_Part
+dim BU_LG_Staff
+dim BU_Eco_No
+dim BU_Sibang_No
+dim BU_Parts_PNO
+dim BU_Last_Use_Date
+
+dim BU_Code
+dim BOM_B_D_No
+dim BU_Content
+dim BU_Receive_Date
+dim BU_Apply_Date
+dim BU_Reply_Date
+dim BU_Request_Reply_Date
+
+dim BU_File_1
+dim BU_File_2
+dim BU_File_3
+dim BU_File_4
+dim BU_File_5
+dim BU_Type
+
+dim BU_RnD_Check
+dim BU_RnD_Memo
+dim BU_JaJe_Check
+dim BU_JaJe_Memo
+dim BU_IMT_Check
+dim BU_IMT_Memo
+dim BU_SMT_Check
+dim BU_SMT_Memo
+dim BU_JeJo2_Check
+dim BU_JeJo2_Memo
+dim BU_JeJo3_Check
+dim BU_JeJo3_Memo
+dim BU_Eng_Check
+dim BU_Eng_Memo
+dim BU_IQC_Check
+dim BU_IQC_Memo
+dim BU_PCBA_QC_Check
+dim BU_PCBA_QC_Memo
+dim BU_CBOX_QC_Check
+dim BU_CBOX_QC_Memo
+dim BU_SPMK_Check
+dim BU_SPMK_Memo
+dim BU_DLV_Check
+dim BU_DLV_Memo
+dim BU_Price_Check
+dim BU_Price_Memo
+dim BU_OTP_Check
+dim BU_OTP_Memo
+dim BU_SMTech_Check
+dim BU_SMTech_Memo
+dim BU_DSTech_Check
+dim BU_DSTech_Memo
+
+dim strPermission
+
+
+
+BU_Code = Request("BU_Code")
+
+Set RS1 = Server.CreateObject("ADODB.RecordSet")
+SQL = "select * from tbBOM_Update_New where BU_Code='"&BU_Code&"'"
+RS1.Open SQL,sys_DBCon
+if RS1.Eof or RS1.Bof then
+	strError = "정보를 찾을 수 없습니다."
+else
+	BU_LG_Part		= RS1("BU_LG_Part")
+	BU_LG_Staff		= RS1("BU_LG_Staff")
+	BU_Eco_No		= RS1("BU_Eco_No")
+	BU_Sibang_No	= RS1("BU_Sibang_No")
+	BU_Parts_PNO	= RS1("BU_Parts_PNO")
+	BU_Last_Use_Date= RS1("BU_Last_Use_Date")
+
+	BOM_B_D_No		= RS1("BOM_B_D_No")
+	BU_Content		= RS1("BU_Content")
+	BU_Receive_Date	= RS1("BU_Receive_Date")
+	BU_Apply_Date	= RS1("BU_Apply_Date")
+	BU_File_1		= RS1("BU_File_1")
+	BU_File_2		= RS1("BU_File_2")
+	BU_File_3		= RS1("BU_File_3")
+	BU_File_4		= RS1("BU_File_4")
+	BU_File_5		= RS1("BU_File_5")
+	BU_Type			= RS1("BU_Type")
+
+	BU_RnD_Check	= RS1("BU_RnD_Check")
+	BU_RnD_Memo		= RS1("BU_RnD_Memo")
+	BU_JaJe_Check	= RS1("BU_JaJe_Check")
+	BU_JaJe_Memo	= RS1("BU_JaJe_Memo")
+	BU_IMT_Check	= RS1("BU_IMT_Check")
+	BU_IMT_Memo		= RS1("BU_IMT_Memo")
+	BU_SMT_Check	= RS1("BU_SMT_Check")
+	BU_SMT_Memo		= RS1("BU_SMT_Memo")
+	BU_JeJo2_Check	= RS1("BU_JeJo2_Check")
+	BU_JeJo2_Memo	= RS1("BU_JeJo2_Memo")
+	BU_JeJo3_Check	= RS1("BU_JeJo3_Check")
+	BU_JeJo3_Memo	= RS1("BU_JeJo3_Memo")
+	BU_Eng_Check	= RS1("BU_Eng_Check")
+	BU_Eng_Memo		= RS1("BU_Eng_Memo")
+	BU_IQC_Check	= RS1("BU_IQC_Check")
+	BU_IQC_Memo		= RS1("BU_IQC_Memo")
+	BU_PCBA_QC_Check= RS1("BU_PCBA_QC_Check")
+	BU_PCBA_QC_Memo	= RS1("BU_PCBA_QC_Memo")
+	BU_CBOX_QC_Check= RS1("BU_CBOX_QC_Check")
+	BU_CBOX_QC_Memo	= RS1("BU_CBOX_QC_Memo")
+	BU_SPMK_Check	= RS1("BU_SPMK_Check")
+	BU_SPMK_Memo	= RS1("BU_SPMK_Memo")
+	BU_DLV_Check	= RS1("BU_DLV_Check")
+	BU_DLV_Memo		= RS1("BU_DLV_Memo")
+	BU_Price_Check	= RS1("BU_Price_Check")
+	BU_Price_Memo	= RS1("BU_Price_Memo")
+	BU_OTP_Check	= RS1("BU_OTP_Check")
+	BU_OTP_Memo		= RS1("BU_OTP_Memo")
+	BU_SMTech_Check	= RS1("BU_SMTech_Check")
+	BU_SMTech_Memo	= RS1("BU_SMTech_Memo")
+	BU_DSTech_Check	= RS1("BU_DSTech_Check")
+	BU_DSTech_Memo	= RS1("BU_DSTech_Memo")
+end if
+RS1.Close
+Set RS1 = Nothing
+
+dim Request_Fields
+dim strRequestForm
+dim strRequestQueryString
+for each Request_Fields in Request.Form
+	if lcase(left(Request_Fields,2))="s_" then
+		strRequestForm = strRequestForm & "<input type='hidden' name='"&Request_Fields&"' value='"&Request(Request_Fields)&"'>" &vbcrlf
+	end if
+next
+for each Request_Fields in Request.QueryString
+	if lcase(left(Request_Fields,2))="s_" then
+		strRequestForm = strRequestForm & "<input type='hidden' name='"&Request_Fields&"' value='"&Request(Request_Fields)&"'>" &vbcrlf
+	end if
+next
+
+call BOM_Guide()
+
+'개발팀 수정폼
+dim strAllowed
+strAllowed = ""
+'시방권한이 있다면, 시방 폼을 먼저 출력한다.
+if strError <> "" then
+	response.write strError &"<Br><Br>"
+	response.write "<input type='button' value='돌아가기' onclick='javascript:history.go(-1);'>"
+else
+	if instr(admin_bu_list,"-"&gM_ID&"-") > 0 and lcase(gM_ID) <> "leejw" then
+		strAllowed = "N"
+		call frmSiBang("")
+		response.write "<br><br><br>"
+	end if
+
+	'기타 부서 시방폼
+	strPermission = getPermission(gM_ID)
+	if instr(strPermission,"-JaJe-") > 0 then
+		call frmSiBang_EX("JaJe",BU_JaJe_Memo,BU_JaJe_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-IMT-") > 0 then
+		call frmSiBang_EX("IMT",BU_IMT_Memo,BU_IMT_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-SMT-") > 0 then
+		call frmSiBang_EX("SMT",BU_SMT_Memo,BU_SMT_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-JeJo2-") > 0 then
+		call frmSiBang_EX("JeJo2",BU_JeJo2_Memo,BU_JeJo2_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-JeJo3-") > 0 then
+		call frmSiBang_EX("JeJo3",BU_JeJo3_Memo,BU_JeJo3_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-Eng-") > 0 then
+		call frmSiBang_EX("Eng",BU_Eng_Memo,BU_Eng_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-IQC-") > 0 then
+		call frmSiBang_EX("IQC",BU_IQC_Memo,BU_IQC_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-PCBA_QC-") > 0 then
+		call frmSiBang_EX("PCBA_QC",BU_PCBA_QC_Memo,BU_PCBA_QC_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-CBOX_QC-") > 0 then
+		call frmSiBang_EX("CBOX_QC",BU_CBOX_QC_Memo,BU_CBOX_QC_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-SPMK-") > 0 then
+		call frmSiBang_EX("SPMK",BU_SPMK_Memo,BU_SPMK_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-DLV-") > 0 then
+		call frmSiBang_EX("DLV",BU_DLV_Memo,BU_DLV_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-Price-") > 0 then
+		call frmSiBang_EX("Price",BU_Price_Memo,BU_Price_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-OTP-") > 0 then
+		call frmSiBang_EX("OTP",BU_OTP_Memo,BU_OTP_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-SMTech-") > 0 then
+		call frmSiBang_EX("SMTech",BU_SMTech_Memo,BU_SMTech_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+	if instr(strPermission,"-DSTech-") > 0 then
+		call frmSiBang_EX("DSTech",BU_DSTech_Memo,BU_DSTech_Check,strAllowed)
+		response.write "<br><br><br>"
+	end if
+
+	if instr(admin_bu_list,"-"&gM_ID&"-") = 0 or lcase(gM_ID) = "leejw" then
+		call frmSiBang("N")
+	end if
+end if
+%>
+
+
+<%
+function PartsToKorean(strPart)
+	dim strKorean
+	Select Case strPart
+		Case "JaJe"
+			strKorean = "자재"
+		Case "IMT"
+			strKorean = "IMT"
+		Case "SMT"
+			strKorean = "SMT"
+		Case "JeJo2"
+			strKorean = "제조2"
+		Case "JeJo3"
+			strKorean = "제조3"
+		Case "Eng"
+			strKorean = "기술"
+		Case "IQC"
+			strKorean = "수입검사"
+		Case "PCBA_QC"
+			strKorean = "PCBA 검사"
+		Case "CBOX_QC"
+			strKorean = "CBOX 검사"
+		Case "SPMK"
+			strKorean = "슈퍼마켓"
+		Case "DLV"
+			strKorean = "영업"
+		Case "Price"
+			strKorean = "단가"
+		Case "OTP"
+			strKorean = "OTP"
+		Case "SMTech"
+			strKorean = "에스엠텍"
+		Case "DSTech"
+			strKorean = "DSTech"
+	End Select
+	PartsToKorean = strKorean
+end function 
+%>
+
+<%
+sub frmSiBang(strAllowed)
+	dim arrEdit_Form(17,1)
+	strEdit_Header = "<input type='hidden' name='BU_Code' value='"&BU_Code&"'>" &vbcrlf
+	arrEdit_Form(0,0) = "사업부"
+	arrEdit_Form(0,1) = "<input type='text' name='BU_LG_Part' style='' value='"&BU_LG_Part&"' style='width:300px'>"
+	
+	arrEdit_Form(1,0) = "담당연구원"
+	arrEdit_Form(1,1) = "<input type='text' name='BU_LG_Staff' style='' value='"&BU_LG_Staff&"' style='width:300px'>"
+	
+	arrEdit_Form(2,0) = "*구분"
+	
+	arrEdit_Form(2,1) = ""
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_SW' style='' value='Y'"
+	if instr(BU_Type,"S/W") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">S/W&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_HW' style='' value='Y'"
+	if instr(BU_Type,"H/W") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">H/W&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_REAL' style='' value='Y'"
+	if instr(BU_Type,"현실화") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">현실화&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_SAMPLE' style='' value='Y'"
+	if instr(BU_Type,"샘플폐기") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">샘플 후 폐기&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<span style='color:lightgray'><input type=checkbox name='BU_Type_New' style='' onclick='return false;' value='Y'"
+	if instr(BU_Type,"신규") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">신규개발&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_Add' style='' onclick='return false;' readonly value='Y'"
+	if instr(BU_Type,"추가") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">작업추가&nbsp;&nbsp;&nbsp;&nbsp;"
+	
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & "<input type=checkbox name='BU_Type_Update' style='' onclick='return false;' readonly value='Y'"
+	if instr(BU_Type,"시방") > 0 then
+		arrEdit_Form(2,1) = arrEdit_Form(2,1) & " checked"
+	end if
+	arrEdit_Form(2,1) = arrEdit_Form(2,1) & ">도면시방&nbsp;&nbsp;&nbsp;&nbsp;</span>"
+	
+	arrEdit_Form(3,0) = "ECO No"
+	arrEdit_Form(3,1) = "<input type='text' name='BU_Eco_No' style='' value='"&BU_Eco_No&"' style='width:300px'>"
+	
+	arrEdit_Form(4,0) = "시방번호"
+	arrEdit_Form(4,1) = "<input type='text' name='BU_Sibang_No' style='' value='"&BU_Sibang_No&"' style='width:300px'>"
+	
+	arrEdit_Form(5,0) = "도면 파트넘버"
+	arrEdit_Form(5,1) = "<input type='text' name='BOM_B_D_No' style='' value='"&BOM_B_D_No&"' style='width:300px' onDblclick=""javascript:show_BOM_Guide(this,'frmCommonReg',0);"">"&Make_BTN("BOM뷰어","javascript:window.open('db_load_action.asp?BU_Code="&BU_Code&"');","")
+	
+	arrEdit_Form(6,0) = "부품 파트넘버"
+	arrEdit_Form(6,1) = "<textarea name='BU_Parts_PNO' style='' style='width:90%' rows=5 style='border:1px solid #999999'>"&BU_Parts_PNO&"</textarea>"
+	
+	arrEdit_Form(7,0) = "*시방내용"
+	arrEdit_Form(7,1) = "<textarea name='BU_Content' style='' style='width:90%' rows=15 style='border:1px solid #999999'>"&BU_Content&"</textarea>"
+	
+	arrEdit_Form(8,0) = "*접수일"
+	arrEdit_Form(8,1) = "<input type='text' name='BU_Receive_Date' style='' value='"&BU_Receive_Date&"' style='width:150px' readonly onclick='Calendar_D(document.frmEdit.BU_Receive_Date);'>"
+	
+	arrEdit_Form(9,0) = "*적용일"
+	arrEdit_Form(9,1) = "<input type='text' name='BU_Apply_Date' style='' value='"&BU_Apply_Date&"' style='width:150px' readonly onclick='Calendar_D(document.frmEdit.BU_Apply_Date);'>"
+	
+	arrEdit_Form(10,0) = "소진일정"
+	arrEdit_Form(10,1) = "<textarea name='BU_Last_Use_Date' style='' style='width:90%' rows=5 style='border:1px solid #999999'>"&BU_Last_Use_Date&"</textarea>"
+	
+	arrEdit_Form(11,0) = "확 인"
+	arrEdit_Form(11,1) = "<select name='BU_RnD_Check' style=''>"
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & "<option value='미확인'"
+	if BU_RnD_Check = "미확인" then
+		arrEdit_Form(11,1) = arrEdit_Form(11,1) & " selected "
+	end if
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & " style=''>미확인</option>"
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & "<option value='확인'"
+	if BU_RnD_Check = "확인" then
+		arrEdit_Form(11,1) = arrEdit_Form(11,1) & " selected "
+	end if
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & " style=''>확인</option>"
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & "<option value='해당없음'"
+	if BU_RnD_Check = "해당없음" then
+		arrEdit_Form(11,1) = arrEdit_Form(11,1) & " selected "
+	end if
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & " style=''>해당없음</option>"
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & "<option value='적용완료'"
+	if BU_RnD_Check = "적용완료" then
+		arrEdit_Form(11,1) = arrEdit_Form(11,1) & " selected "
+	end if
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & " style=''>적용완료</option>"
+	arrEdit_Form(11,1) = arrEdit_Form(11,1) & "</select>"
+	arrEdit_Form(12,0) = "메 모"
+	arrEdit_Form(12,1) = "<textarea name='BU_RnD_Memo' style='width:90%' rows=5 style='border:1px solid #999999' style=''>"&BU_RnD_Memo&"</textarea>"
+
+	arrEdit_Form(13,0) = "첨부파일1 (시방서)"
+	arrEdit_Form(13,1) = "<input type='hidden' name='oldBU_File_1' value='"&BU_File_1&"'>"
+	If BU_File_1 <> "" then
+		arrEdit_Form(13,1) = arrEdit_Form(13,1) & "<a href='/function/ifrm_download.asp?Filepath="&DefaultPath_BOM&BU_File_1&"' target='ifrm_download'>"&BU_File_1&"</a>"
+		arrEdit_Form(13,1) = arrEdit_Form(13,1) & "&nbsp;&nbsp;&nbsp;<input type='checkbox' name='strDelete' style='' value='BU_File_1'>삭제"
+	End if
+	arrEdit_Form(13,1) = arrEdit_Form(13,1) & "<br><input type='File' name='BU_File_1' style='' style='width:90%'>"
+	
+	arrEdit_Form(14,0) = "첨부파일2 ( 도 면 )"
+	arrEdit_Form(14,1) = "<input type='hidden' name='oldBU_File_2' value='"&BU_File_2&"'>"
+	If BU_File_2 <> "" then
+		arrEdit_Form(14,1) = arrEdit_Form(14,1) & "<a href='/function/ifrm_download.asp?Filepath="&DefaultPath_BOM&BU_File_2&"' target='ifrm_download'>"&BU_File_2&"</a>"
+		arrEdit_Form(14,1) = arrEdit_Form(14,1) & "&nbsp;&nbsp;&nbsp;<input type='checkbox' name='strDelete' style='' value='BU_File_2'>삭제"
+	End if
+	arrEdit_Form(14,1) = arrEdit_Form(14,1) & "<br><input type='File' name='BU_File_2' style='' style='width:90%'>"
+	
+	arrEdit_Form(15,0) = "첨부파일3 ( 기타1 )"
+	arrEdit_Form(15,1) = "<input type='hidden' name='oldBU_File_3' value='"&BU_File_3&"'>"
+	If BU_File_3 <> "" then
+		arrEdit_Form(15,1) = arrEdit_Form(15,1) & "<a href='/function/ifrm_download.asp?Filepath="&DefaultPath_BOM&BU_File_3&"' target='ifrm_download'>"&BU_File_3&"</a>"
+		arrEdit_Form(15,1) = arrEdit_Form(15,1) & "&nbsp;&nbsp;&nbsp;<input type='checkbox' name='strDelete' style='' value='BU_File_3'>삭제"
+	End if
+	arrEdit_Form(15,1) = arrEdit_Form(15,1) & "<br><input type='File' name='BU_File_3' style='' style='width:90%'>"
+	
+	arrEdit_Form(16,0) = "첨부파일4 ( 기타2 )"
+	arrEdit_Form(16,1) = "<input type='hidden' name='oldBU_File_4' value='"&BU_File_4&"'>"
+	If BU_File_4 <> "" then
+		arrEdit_Form(16,1) = arrEdit_Form(16,1) & "<a href='/function/ifrm_download.asp?Filepath="&DefaultPath_BOM&BU_File_4&"' target='ifrm_download'>"&BU_File_4&"</a>"
+		arrEdit_Form(16,1) = arrEdit_Form(16,1) & "&nbsp;&nbsp;&nbsp;<input type='checkbox' name='strDelete' style='' value='BU_File_4'>삭제"
+	End if
+	arrEdit_Form(16,1) = arrEdit_Form(16,1) & "<br><input type='File' name='BU_File_4' style='' style='width:90%'>"
+	
+	arrEdit_Form(17,0) = "첨부파일5 ( 기타3 )"
+	arrEdit_Form(17,1) = "<input type='hidden' name='oldBU_File_5' value='"&BU_File_5&"'>"
+	If BU_File_5 <> "" then
+		arrEdit_Form(17,1) = arrEdit_Form(17,1) & "<a href='/function/ifrm_download.asp?Filepath="&DefaultPath_BOM&BU_File_5&"' target='ifrm_download'>"&BU_File_5&"</a>"
+		arrEdit_Form(17,1) = arrEdit_Form(17,1) & "&nbsp;&nbsp;&nbsp;<input type='checkbox' name='strDelete' style='' value='BU_File_5'>삭제"
+	End if
+	arrEdit_Form(17,1) = arrEdit_Form(17,1) & "<br><input type='File' name='BU_File_5' style='' style='width:90%'>"
+	
+	
+	Title			= "<B>시방사항수정</b>"
+	
+	URL_Action		= "new_bu_edit_action.asp"
+	URL_Prev		= "new_BU_edit_form.asp"
+	URL_Next		= "new_BU_edit_form.asp"
+	URL_List		= "new_BU_list.asp"
+	Form_Type		= "enctype='MULTIPART/FORM-DATA'"
+	Form_Name		= "frmEdit"
+	ColumBU_Width	= 180
+	Value_Width		= 700
+	%>
+	<script language="javascript">
+	function <%=Form_Name%>_Check(form)
+	{
+		var strError = '';
+		
+		if(!<%=Form_Name%>.BU_Content.value)
+		{
+			strError += "*시방내용을 입력해주세요.\n"
+		}
+	
+	
+		if(strError == '')
+		{
+			<%=Form_Name%>.submit();
+		}
+		else
+		{
+			alert(strError);
+		}
+	}
+	</script>
+	<%
+	call Common_Edit_Form_EX(Title, URL_Action, URL_Next, URL_List, Form_Type, Form_Name, ColumBU_Width, Value_Width, strEdit_Header, arrEdit_Form, strRequestForm, strAllowed)
+
+	%>
+	<script language="javascript">
+	function printForm()
+	{
+		alert("확인을 누르신 후 잠시 기다리시면\n인쇄창이 뜹니다.");
+		window.open("new_bu_print.asp?bu_code=<%=BU_Code%>","PartsOrderSheet","height="+screen.height+",width="+screen.width+",status=yes,toolbar=yes,location=yes,directories=yes,location=yes,menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes");
+	}	
+	function delete_Check()
+	{
+		if(confirm("정말 삭제하시겠습니까?")){
+			frmDeleteBU.submit();
+		}
+	}
+	</script>
+	
+	<img src="/img/blank.gif" width=10px height=10px><br>
+	<table width=210px cellpadding=0 cellspacing=0 border=0>
+	<form name="frmDeleteBU" action="new_bu_del_action.asp" method="post">
+		<input type="hidden" name="BU_Code" value="<%=BU_Code%>">
+	</form>
+	<tr>
+<%
+	if strAllowed <> "N" then
+%>
+	
+		<td width=100><%=Make_L_BTN("시방삭제","javascript:delete_Check();","")%></td>
+		<td width=10></td>
+		<td width=100><%=Make_L_BTN("확인서인쇄","javascript:printForm();","")%></td>
+	
+	
+<%
+	else
+%>
+		<td width=55></td>
+		<td width=100><%=Make_L_BTN("확인서인쇄","javascript:printForm();","")%></td>
+		<td width=55></td>
+<%
+	end if
+%>	
+	</tr>
+	</table>
+<%
+'====================================================
+end sub
+%>
+
+
+<%
+sub frmSiBang_EX(strPart,strMemo,strCheck,strAllowed)
+	dim arrEdit_Form_Ex(1,1)
+	strEdit_Header = "<input type='hidden' name='BU_Code' value='"&BU_Code&"'>" &vbcrlf
+	strEdit_Header = strEdit_Header & "<input type='hidden' name='strPart' value='"&strPart&"'>" &vbcrlf
+	
+	arrEdit_Form_Ex(0,0) = "확 인"
+	arrEdit_Form_Ex(0,1) = "<select name='strCheck' style=''>"
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & "<option value='미확인'"
+	if strCheck = "미확인" then
+		arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " selected "
+	end if
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " style=''>미확인</option>"
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & "<option value='확인'"
+	if strCheck = "확인" then
+		arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " selected "
+	end if
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " style=''>확인</option>"
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & "<option value='해당없음'"
+	if strCheck = "해당없음" then
+		arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " selected "
+	end if
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " style=''>해당없음</option>"
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & "<option value='적용완료'"
+	if strCheck = "적용완료" then
+		arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " selected "
+	end if
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & " style=''>적용완료</option>"
+	arrEdit_Form_Ex(0,1) = arrEdit_Form_Ex(0,1) & "</select>"
+	arrEdit_Form_EX(1,0) = "메 모"
+	arrEdit_Form_EX(1,1) = "<textarea name='strMemo' style='width:90%' rows=5 style='border:1px solid #999999' style=''>"&strMemo&"</textarea>"
+
+	
+	
+	Title			= "<b>"&PartsToKorean(strPart)&" 시방관리</b>"
+	
+	URL_Action		= "new_bu_edit_action_ex.asp"
+	URL_Prev		= "new_BU_edit_form.asp"
+	URL_Next		= "new_BU_edit_form.asp"
+	URL_List		= "new_BU_list.asp"
+	Form_Type		= ""
+	Form_Name		= "frmEdit_"&strPart
+	ColumBU_Width	= 180
+	Value_Width		= 700
+	%>
+	<script language="javascript">
+	function <%=Form_Name%>_Check()
+	{
+		var strError = '';
+	
+		if(strError == '')
+		{
+			<%=Form_Name%>.submit();
+		}
+		else
+		{
+			alert(strError);
+		}
+	}
+	</script>
+	<%
+	call Common_Edit_Form_EX(Title, URL_Action, URL_Next, URL_List, Form_Type, Form_Name, ColumBU_Width, Value_Width, strEdit_Header, arrEdit_Form_Ex, strRequestForm, strAllowed)
+end sub
+%>
+
+
+
+
+<!-- #include virtual = "/header/layout_tail.asp" -->
+<!-- #include virtual = "/header/html_tail.asp" -->
+<!-- #include virtual = "/header/db_tail.asp" -->

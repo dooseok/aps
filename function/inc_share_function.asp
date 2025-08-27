@@ -1,0 +1,3117 @@
+<%
+function getPermission(M_ID)
+	dim strPermission
+	Select Case lcase(M_ID)
+		case "leejw"
+			strPermission = "-JaJe-IMT-SMT-JeJo2-JeJo3-OTP-Price-PCBA_QC-CBOX_QC-DLV-IQC-Eng-SMTech-DSTech-"
+		case "rnd"
+			strPermission = "-JaJe-IMT-SMT-JeJo2-JeJo3-OTP-Price-PCBA_QC-CBOX_QC-DLV-IQC-Eng-SMTech-DSTech-"
+		case "jaje"
+			strPermission = "-JaJe-"
+		case "imt"
+			strPermission = "-IMT-SMT-"
+		case "smt"
+			strPermission = "-IMT-SMT-"
+		case "jejo2"
+			strPermission = "-JeJo2-"
+		case "jejo3"
+			strPermission = "-JeJo3-"
+		case "eng"
+			strPermission = "-Eng-"
+		case "iqc"
+			strPermission = "-IQC-"
+		case "pcbqc"
+			strPermission = "-PCBA_QC-"
+		case "cboxqc"
+			strPermission = "-CBOX_QC-"
+		case "qa"
+			strPermission = "-IQC-PCBA_QC-CBOX_QC-SPMK-"
+		case "sales"
+			strPermission = "-DLV-"
+		case "otp"
+			strPermission = "-OTP-"
+		case "smtech"
+			strPermission = "-SMTech-"
+		case "dstech"
+			strPermission = "-DSTech-"
+		case "price"
+			strPermission = "-Price-"
+		case else
+			strPermission = "-JaJe-IMT-SMT-JeJo2-JeJo3-OTP-Price-PCBA_QC-CBOX_QC-DLV-IQC-Eng-SMTech-DSTech-"
+	end select
+	getPermission = strPermission
+end function
+
+
+function getPWS_Raw_Data(PRD_Date,PRD_Line)
+	dim RS1
+	dim SQL
+	dim CNT1
+	dim CNT2
+	dim CNT3
+
+	dim accCNT
+
+	dim PRD_PartNo
+	dim PRD_BOX_Time
+	dim calPRD_BOX_Time
+
+	dim oldPRD_PartNo
+	dim oldPRD_BOX_Time
+	dim caloldPRD_BOX_Time
+
+	dim strPRD_PartNo
+	dim strPRD_BOX_Time_Start
+	dim strPRD_BOX_Time_End
+
+	dim arrPRD_PartNo
+	dim arrPRD_BOX_Time_Start
+	dim arrPRD_BOX_Time_End
+
+	dim tempPRD_BOX_Start_Time
+
+	dim arrResult
+	dim arrPWS_Data
+
+	set RS1 = Server.CreateObject("ADODB.RecordSet")
+
+	if left(PRD_Line,4) = "PCBA" then
+		SQL = SQL & "select "&vbcrlf
+		SQL = SQL & "	PRD_PartNo, "&vbcrlf
+		SQL = SQL & "	PRD_Box_Time = PRD_Input_Time "&vbcrlf
+		SQL = SQL & "from "&vbcrlf
+		SQL = SQL & "	tbPWS_Raw_Data "&vbcrlf
+		SQL = SQL & "where "&vbcrlf
+		SQL = SQL & "	PRD_Input_Date = '"&PRD_Date&"' and "&vbcrlf
+		SQL = SQL & "	PRD_Line = '"&PRD_Line&"' and PRD_Dummy_YN is null "&vbcrlf
+		SQL = SQL & "order by "&vbcrlf
+		'SQL = SQL & "	PRD_Input_Time, "&vbcrlf
+		SQL = SQL & "	PRD_Code "&vbcrlf
+	else		
+		SQL = SQL & "select "&vbcrlf
+		SQL = SQL & "	PRD_PartNo, "&vbcrlf
+		SQL = SQL & "	PRD_BOX_Time "&vbcrlf
+		SQL = SQL & "from "&vbcrlf
+		SQL = SQL & "	tbPWS_Raw_Data "&vbcrlf
+		SQL = SQL & "where "&vbcrlf
+		SQL = SQL & "	PRD_BOX_Date = '"&PRD_Date&"' and "&vbcrlf
+		SQL = SQL & "	PRD_Line = '"&PRD_Line&"' and "&vbcrlf
+		SQL = SQL & "	PRD_BOX_Date is not null and PRD_Dummy_YN is null "&vbcrlf
+		SQL = SQL & "order by "&vbcrlf
+		SQL = SQL & "	PRD_BOX_Time, "&vbcrlf
+		SQL = SQL & "	PRD_Code "&vbcrlf
+	end if
+	
+	RS1.Open SQL,sys_DBCon,1
+	
+	if RS1.Eof or RS1.Bof then
+		redim arrPWS_Data(0,8)
+	else
+		redim arrResult(RS1.RecordCount, 8)
+		
+		' 񱳿   ɸ     ʱ              ʱ ȭ
+		oldPRD_PartNo	= RS1("PRD_PartNo")
+		oldPRD_BOX_Time = RS1("PRD_BOX_Time")
+
+		tempPRD_BOX_Start_Time = RS1("PRD_BOX_Time")
+	
+		' 迭         ߰ 
+		CNT1	= 0
+		CNT2	= 0
+		'PRD_Date       PRD_Line          ȸ
+		do until RS1.Eof
+			'        ڵ      
+			PRD_PartNo		= RS1("PRD_PartNo")
+			PRD_BOX_Time	= RS1("PRD_BOX_Time")
+	
+			' ð           ȯ  
+			caloldPRD_BOX_Time	= int(left(oldPRD_BOX_Time,2)) * 60 + int(right(oldPRD_BOX_Time,2))
+			calPRD_BOX_Time		= int(left(PRD_BOX_Time,2)) * 60 + int(right(PRD_BOX_Time,2))
+	
+			'      𵨰   ٸ     ̰ų ,         ̶  9   ̻             ٸ .
+			if (oldPRD_PartNo <> PRD_PartNo) or (caloldPRD_BOX_Time + 9 < calPRD_BOX_Time) then
+				accCNT = 0
+				for CNT3=0 to CNT1
+					if arrResult(CNT3,0) = oldPRD_PartNo then
+						accCNT = accCNT + arrResult(CNT3,1)
+					end if
+				next
+	
+				' ٸ   ڷḦ     
+				arrResult(CNT1,0) = oldPRD_PartNo			' ٲ         
+				arrResult(CNT1,1) = CNT2					'              
+				arrResult(CNT1,2) = accCNT+CNT2				'                   
+				arrResult(CNT1,3) = tempPRD_BOX_Start_Time	'   ο   ð      
+				arrResult(CNT1,4) = oldPRD_BOX_Time			'    ð      
+				arrResult(CNT1,5) = "raw"
+				arrResult(CNT1,6) = ""
+				arrResult(CNT1,7) = ""
+				arrResult(CNT1,8) = ""
+				
+				CNT1 = CNT1 + 1	
+				CNT2 = 0
+				tempPRD_BOX_Start_Time	= PRD_BOX_Time
+			end if
+	
+			' 񱳸               ڵ      		
+			oldPRD_PartNo	= PRD_PartNo
+			oldPRD_BOX_Time	= PRD_BOX_Time
+	
+			CNT2 = CNT2 + 1
+			RS1.MoveNext
+		Loop
+
+	'                          Ƿ ,         ߰ .
+	accCNT = 0
+	for CNT3=0 to CNT1
+		if arrResult(CNT3,0) = oldPRD_PartNo then
+			accCNT = accCNT + arrResult(CNT3,1)
+		end if
+	next
+
+	arrResult(CNT1,0) = oldPRD_PartNo			' ٲ         
+	arrResult(CNT1,1) = CNT2					'              
+	arrResult(CNT1,2) = accCNT+CNT2				'                   
+	arrResult(CNT1,3) = tempPRD_BOX_Start_Time	'   ο   ð      
+	arrResult(CNT1,4) = oldPRD_BOX_Time			'    ð      
+	arrResult(CNT1,5) = "raw"
+	arrResult(CNT1,6) = 0
+	arrResult(CNT1,7) = ""
+	arrResult(CNT1,8) = ""
+
+	'    ´   迭    ű  
+	redim arrPWS_Data(CNT1,8)
+	for CNT2 = 0 to CNT1
+		'response.write arrResult(CNT2,0) &"/"& arrResult(CNT2,3) &"/"& arrResult(CNT2,4) & "<br>"
+		arrPWS_Data(CNT2,0)	= arrResult(CNT2,0)
+		arrPWS_Data(CNT2,1)	= arrResult(CNT2,1)
+		arrPWS_Data(CNT2,2)	= arrResult(CNT2,2)
+		arrPWS_Data(CNT2,3)	= arrResult(CNT2,3)
+		arrPWS_Data(CNT2,4)	= arrResult(CNT2,4)
+		arrPWS_Data(CNT2,5)	= arrResult(CNT2,5)
+		arrPWS_Data(CNT2,6)	= arrResult(CNT2,6)
+		arrPWS_Data(CNT2,7)	= arrResult(CNT2,7)
+		arrPWS_Data(CNT2,8)	= arrResult(CNT2,8)
+	next
+	
+	end if
+	RS1.Close
+	
+	set RS1 = Nothing
+
+	getPWS_Raw_Data = arrPWS_Data
+	
+end function
+%>
+
+<%
+sub usePrinter()
+%>
+
+<OBJECT ID='factory' viewastext style='display:none' CLASSID='CLSID:1663ed61-23eb-11d2-b92f-008048fdd814' codebase='http://kr.spstest.com:1080/function/smsx.cab#version=6,4,438,06'></OBJECT>
+
+<!--<object id="factory" style="display:none"
+  classid="clsid:1663ed61-23eb-11d2-b92f-008048fdd814"
+  codebase="/smsx.cab#Version=7,7,0,20">
+</object>-->
+<%
+end sub
+%>
+
+<%
+sub Common_Display_Summary(strString, SQL, Currency_YN, strWidth_Total)
+	dim RS1
+	dim Sum_String
+
+	SQL = replace(SQL,"''","'")
+
+	set RS1 = Server.CreateObject("ADODB.RecordSet")
+	
+	RS1.Open SQL,sys_DBCon
+	Sum_String = RS1(0)
+	RS1.Close
+	set RS1 = nothing
+
+	if isnull(Sum_String) then
+		Sum_String = 0
+	end if
+
+	if Currency_YN = "Y" then
+		Sum_String = CustomFormatCurrency(Sum_String)
+	else
+		Sum_String = CustomFormatComma(Sum_String)
+	end if
+
+	strString = replace(strString,"|Sum_String|",Sum_String)
+%>
+<img src="/img/blank.gif" width=1px height=1px><br>
+<center>
+<table width="<%=strWidth_Total%>px" cellpadding=1 cellspacing=1 border=0 bgcolor="#ffffff">
+<tr bgcolor=white>
+	<td align=right class="Common_Display_Summary"><%=strString%></td>
+</tr>
+</table>
+</center>
+<%
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش          +  Ŵ
+sub Process_Qty_BOM_Sub_Plus(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	dim SQL
+	'IMD       , tbBOM   B_IMD_Qty        
+	if PR_Process = "IMD" then
+		SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty + "&PR_Amount&" where B_D_No = '"&BOM_Sub_BS_D_No&"' or B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+		sys_DBCon.execute(SQL)
+	'DLV     ƴѰ  , tbBOM_Sub    BS_(      )_Qty        
+	elseif PR_Process <> "DLV" and PR_Process <> "MAN" and PR_Process <> "ASM" then 'PWS--     ̳  ASM  ϼ  ÿ    +    Ǹ   ȵ .
+		SQL = "update tbBOM_Sub set BS_"&PR_Process&"_Qty = BS_"&PR_Process&"_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+		sys_DBCon.execute(SQL)
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش          -  Ŵ
+sub Process_Qty_BOM_Sub_Minus(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	dim SQL
+
+	'IMD       , tbBOM   B_IMD_Qty        
+	if PR_Process = "IMD" then
+		SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty - "&PR_Amount&" where B_D_No = '"&BOM_Sub_BS_D_No&"' or B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+		sys_DBCon.execute(SQL)
+	'DLV     ƴѰ  , tbBOM_Sub    BS_(      )_Qty        
+	elseif PR_Process <> "DLV" and PR_Process <> "MAN" and PR_Process <> "ASM" then 'PWS--     ̳  ASM  ϼ  ÿ    -    Ǹ   ȵ .
+		SQL = "update tbBOM_Sub set BS_"&PR_Process&"_Qty = BS_"&PR_Process&"_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+		sys_DBCon.execute(SQL)
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ                  +  Ŵ
+sub Process_Qty_BOM_Sub_Before_Plus(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	if instr("IMD,SMD,MAN",PR_Process) > 0 then			'IMD, SMD, MAN      ,
+		select case PR_Process
+		case "SMD" 'SMD ̸ , IMD         +
+			SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty + "&PR_Amount&" where B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+			sys_DBCon.execute(SQL)
+		case "MAN" 'MAN ̸ , SMD         +
+			SQL = "update tbBOM_Sub set BS_SMD_Qty = BS_SMD_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end select
+	'elseif PR_Process = "ASM" then 'ASM ̸ ,             PCB           +
+		'SQL = 		"update "&vbcrlf
+		'SQL = SQL & "	tbBOM_Sub "&vbcrlf
+		'SQL = SQL & "set "&vbcrlf
+		'SQL = SQL & "	BS_MAN_Qty = BS_MAN_Qty + "&vbcrlf
+		'SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+		'SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+		'SQL = SQL & "				where "&vbcrlf
+		'SQL = SQL & "					Parts_P_P_No = BS_D_No)) "&vbcrlf
+		'SQL = SQL & "where "&vbcrlf
+		'SQL = SQL & "	BS_D_No in "&vbcrlf
+		'SQL = SQL & "	(select Parts_P_P_No "&vbcrlf
+		'SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+		'SQL = SQL & "	where "&vbcrlf
+		'SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+		'SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+		'sys_DBCon.execute(SQL)
+	elseif PR_Process = "DLV" then 'DLV ̸ , 6871, EBR      , MAN         ,       ASM         . 
+		'if left(BOM_Sub_BS_D_No,4) = "6871" or left(BOM_Sub_BS_D_No,3) = "EBR" then
+			SQL = "update tbBOM_Sub set BS_MAN_Qty = BS_MAN_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		'else
+			'SQL = "update tbBOM_Sub set BS_ASM_Qty = BS_ASM_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			'sys_DBCon.execute(SQL)
+		'end if
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ                  -  Ŵ
+sub Process_Qty_BOM_Sub_Before_Minus(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	if instr("IMD,SMD,MAN",PR_Process) > 0 then			'PCB         IMD        ϰ                     -ó   Ѵ .
+		select case PR_Process
+		case "SMD" 'SMD ̸ , IMD         -
+			SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty - "&PR_Amount&" where B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+			sys_DBCon.execute(SQL)
+		case "MAN" 'MAN ̸ , SMD         -
+			SQL = "update tbBOM_Sub set BS_SMD_Qty = BS_SMD_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end select
+	'elseif PR_Process = "ASM" then 'ASM ̸ ,             PCB           -
+	'	SQL = 		"update "&vbcrlf
+		'SQL = SQL & "	tbBOM_Sub "&vbcrlf
+		'SQL = SQL & "set "&vbcrlf
+		'SQL = SQL & "	BS_MAN_Qty = BS_MAN_Qty - "&vbcrlf
+		'SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+		'SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+		'SQL = SQL & "				where "&vbcrlf
+		'SQL = SQL & "					Parts_P_P_No = BS_D_No)) "&vbcrlf
+		'SQL = SQL & "where "&vbcrlf
+		'SQL = SQL & "	BS_D_No in "&vbcrlf
+		'SQL = SQL & "	(select Parts_P_P_No "&vbcrlf
+		'SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+		'SQL = SQL & "	where "&vbcrlf
+		'SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+		'SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+		'sys_DBCon.execute(SQL)
+	elseif PR_Process = "DLV" then 'DLV ̸ , 6871, EBR      , MAN         ,       ASM         . 
+		'if left(BOM_Sub_BS_D_No,4) = "6871" or left(BOM_Sub_BS_D_No,3) = "EBR" then
+			SQL = "update tbBOM_Sub set BS_MAN_Qty = BS_MAN_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		'else
+			'SQL = "update tbBOM_Sub set BS_ASM_Qty = BS_ASM_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			'sys_DBCon.execute(SQL)
+		'end if
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش            ̴           -  Ŵ
+sub Process_Qty_Parts_Plus(BOM_Sub_BS_D_No,PR_Process,PR_Amount)
+	dim SQL
+
+	'SQL = 		"update "&vbcrlf
+	'SQL = SQL & "	tbParts "&vbcrlf
+	'SQL = SQL & "set "&vbcrlf
+	'SQL = SQL & "	P_Qty = P_Qty + "&vbcrlf
+	'SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+	'SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+	'SQL = SQL & "				where "&vbcrlf
+	'SQL = SQL & "					Parts_P_P_No = P_P_No)) "&vbcrlf
+	'SQL = SQL & "where "&vbcrlf
+	'if PR_Process = "MAN" then			'PCB Assy  , MAN           Է½  ASM, I/M      Բ              ̳ʽ  ó  
+	'	SQL = SQL & "	(P_Work_Type = 'I/M' or P_Work_Type = 'ASM' or "&vbcrlf
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"') and "&vbcrlf
+	'elseif PR_Process = "SMD" then			'PCB Assy  , MAN           Է½  ASM, I/M      Բ              ̳ʽ  ó  
+	'	SQL = SQL & "	(P_Work_Type = 'I/M' or P_Work_Type = 'IMD' or "&vbcrlf
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"') and "&vbcrlf
+	'elseif PR_Process <> "ASM" then		'PCB Assy  , MAN        ƴ (IMD, SMD)        ش               ̳ʽ  ó  
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"' and "&vbcrlf
+	'end if								'                                  ̳ʽ  ó  
+	'SQL = SQL & "	exists "&vbcrlf
+	'SQL = SQL & "	(select	BQ_Code "&vbcrlf
+	'SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+	'SQL = SQL & "	where "&vbcrlf
+	'SQL = SQL & "		Parts_P_P_No = P_P_No and "&vbcrlf
+	'SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+	'SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+	'sys_DBCon.execute(SQL)
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش            ̴           +  Ŵ
+sub Process_Qty_Parts_Minus(BOM_Sub_BS_D_No,PR_Process,PR_Amount)
+	dim SQL
+
+	'SQL = 		"update "&vbcrlf
+	'SQL = SQL & "	tbParts "&vbcrlf
+	'SQL = SQL & "set "&vbcrlf
+	'SQL = SQL & "	P_Qty = P_Qty - "&vbcrlf
+	'SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+	'SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+	'SQL = SQL & "				where "&vbcrlf
+	'SQL = SQL & "					Parts_P_P_No = P_P_No)) "&vbcrlf
+	'SQL = SQL & "where "&vbcrlf
+	'if PR_Process = "MAN" then			'PCB Assy  , MAN           Է½  ASM, I/M      Բ              ̳ʽ  ó  
+	'	SQL = SQL & "	(P_Work_Type = 'I/M' or P_Work_Type = 'ASM' or "&vbcrlf
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"') and "&vbcrlf
+	'elseif PR_Process = "SMD" then			'PCB Assy  , MAN           Է½  ASM, I/M      Բ              ̳ʽ  ó  
+	'	SQL = SQL & "	(P_Work_Type = 'I/M' or P_Work_Type = 'IMD' or "&vbcrlf
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"') and "&vbcrlf
+	'elseif PR_Process <> "ASM" then		'PCB Assy  , MAN        ƴ (IMD, SMD)        ش               ̳ʽ  ó  
+	'	SQL = SQL & "	P_Work_Type = '"&PR_Process&"' and "&vbcrlf
+	'end if								'                                  ̳ʽ  ó  
+	'SQL = SQL & "	exists "&vbcrlf
+	'SQL = SQL & "	(select	BQ_Code "&vbcrlf
+	'SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+	'SQL = SQL & "	where "&vbcrlf
+	'SQL = SQL & "		Parts_P_P_No = P_P_No and "&vbcrlf
+	'SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+	'SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+	'sys_DBCon.execute(SQL)
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش          +  Ŵ
+sub Process_Qty_BOM_Sub_Plus2(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	dim SQL
+	'IMD       , tbBOM   B_IMD_Qty        
+	if PR_Process = "IMD" then
+		SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty + "&PR_Amount&" where B_D_No = '"&BOM_Sub_BS_D_No&"' or B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+		sys_DBCon.execute(SQL)
+	'DLV     ƴѰ  , tbBOM_Sub    BS_(      )_Qty        
+	elseif PR_Process <> "DLV" then
+		SQL = "update tbBOM_Sub set BS_"&PR_Process&"_Qty = BS_"&PR_Process&"_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+		sys_DBCon.execute(SQL)
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ     ش          -  Ŵ
+sub Process_Qty_BOM_Sub_Minus2(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	dim SQL
+
+	'IMD       , tbBOM   B_IMD_Qty        
+	if PR_Process = "IMD" then
+		SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty - "&PR_Amount&" where B_D_No = '"&BOM_Sub_BS_D_No&"' or B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+		sys_DBCon.execute(SQL)
+	'DLV     ƴѰ  , tbBOM_Sub    BS_(      )_Qty        
+	elseif PR_Process <> "DLV" then
+		SQL = "update tbBOM_Sub set BS_"&PR_Process&"_Qty = BS_"&PR_Process&"_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+		sys_DBCon.execute(SQL)
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ                  +  Ŵ
+sub Process_Qty_BOM_Sub_Before_Plus2(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	if instr("IMD,SMD,MAN",PR_Process) > 0 then			'IMD, SMD, MAN      ,
+		select case PR_Process
+		case "SMD" 'SMD ̸ , IMD         +
+			SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty + "&PR_Amount&" where B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+			sys_DBCon.execute(SQL)
+		case "MAN" 'MAN ̸ , SMD         +
+			SQL = "update tbBOM_Sub set BS_SMD_Qty = BS_SMD_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end select
+	elseif PR_Process = "ASM" then 'ASM ̸ ,             PCB           +
+		SQL = 		"update "&vbcrlf
+		SQL = SQL & "	tbBOM_Sub "&vbcrlf
+		SQL = SQL & "set "&vbcrlf
+		SQL = SQL & "	BS_MAN_Qty = BS_MAN_Qty + "&vbcrlf
+		SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+		SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+		SQL = SQL & "				where "&vbcrlf
+		SQL = SQL & "					Parts_P_P_No = BS_D_No)) "&vbcrlf
+		SQL = SQL & "where "&vbcrlf
+		SQL = SQL & "	BS_D_No in "&vbcrlf
+		SQL = SQL & "	(select Parts_P_P_No "&vbcrlf
+		SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+		SQL = SQL & "	where "&vbcrlf
+		SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+		SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+		sys_DBCon.execute(SQL)
+	elseif PR_Process = "DLV" then 'DLV ̸ , 6871, EBR      , MAN         ,       ASM         . 
+		if left(BOM_Sub_BS_D_No,4) = "6871" or left(BOM_Sub_BS_D_No,3) = "EBR" then
+			SQL = "update tbBOM_Sub set BS_MAN_Qty = BS_MAN_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		else
+			SQL = "update tbBOM_Sub set BS_ASM_Qty = BS_ASM_Qty + "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end if
+	end if
+end sub
+%>
+
+<%
+' Էµ          ش  ϴ      Ʈ ѹ                  -  Ŵ
+sub Process_Qty_BOM_Sub_Before_Minus2(BOM_Sub_BS_D_No,PR_Process,PR_Amount,Work_Date)
+	if instr("IMD,SMD,MAN",PR_Process) > 0 then			'PCB         IMD        ϰ                     -ó   Ѵ .
+		select case PR_Process
+		case "SMD" 'SMD ̸ , IMD         -
+			SQL = "update tbBOM set B_IMD_Qty = B_IMD_Qty - "&PR_Amount&" where B_Code in (select BOM_B_Code from tbBOM_Sub where BS_D_No = '"&BOM_Sub_BS_D_No&"')"
+			sys_DBCon.execute(SQL)
+		case "MAN" 'MAN ̸ , SMD         -
+			SQL = "update tbBOM_Sub set BS_SMD_Qty = BS_SMD_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end select
+	elseif PR_Process = "ASM" then 'ASM ̸ ,             PCB           -
+		SQL = 		"update "&vbcrlf
+		SQL = SQL & "	tbBOM_Sub "&vbcrlf
+		SQL = SQL & "set "&vbcrlf
+		SQL = SQL & "	BS_MAN_Qty = BS_MAN_Qty - "&vbcrlf
+		SQL = SQL & "		("&PR_Amount&" * (select top 1 BQ_Qty "&vbcrlf
+		SQL = SQL & "				from tbBOM_Qty "&vbcrlf
+		SQL = SQL & "				where "&vbcrlf
+		SQL = SQL & "					Parts_P_P_No = BS_D_No)) "&vbcrlf
+		SQL = SQL & "where "&vbcrlf
+		SQL = SQL & "	BS_D_No in "&vbcrlf
+		SQL = SQL & "	(select Parts_P_P_No "&vbcrlf
+		SQL = SQL & "	from tbBOM_Qty "&vbcrlf
+		SQL = SQL & "	where "&vbcrlf
+		SQL = SQL & "		BQ_Qty > 0 and "&vbcrlf
+		SQL = SQL & "		BOM_Sub_BS_D_No = '"&BOM_Sub_BS_D_No&"') "&vbcrlf
+		sys_DBCon.execute(SQL)
+	elseif PR_Process = "DLV" then 'DLV ̸ , 6871, EBR      , MAN         ,       ASM         . 
+		if left(BOM_Sub_BS_D_No,4) = "6871" or left(BOM_Sub_BS_D_No,3) = "EBR" then
+			SQL = "update tbBOM_Sub set BS_MAN_Qty = BS_MAN_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		else
+			SQL = "update tbBOM_Sub set BS_ASM_Qty = BS_ASM_Qty - "&PR_Amount&" where BS_D_No = '"&BOM_Sub_BS_D_No&"'"
+			sys_DBCon.execute(SQL)
+		end if
+	end if
+end sub
+%>
+
+
+<%
+sub WorkOrder_Guide()
+%>
+<script language="javascript">
+var objWorkOrderGuide;
+
+function show_WorkOrder_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objWorkOrderGuide					= strObjectName
+	divWorkOrder_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divWorkOrder_Guide.style.posTop		= window.event.clientY + 0 + document.body.scrollTop;
+	divWorkOrder_Guide.style.display	= "block";
+
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_list.asp") > 0 or instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_plan_list.asp") > 0 then
+%>
+	if (strExtraValue1 == "NEW")
+	{
+		document.getElementById("ifrmWorkOrderGuide").src = "/function/inc_WorkOrder_guide.asp?BOM_Sub_BS_D_No=" + frmCommonListReg.BOM_Sub_BS_D_No.value;
+	}
+	else
+	{
+		strExtraValue2 = frmCommonList.strID_All.length;
+		if (strExtraValue2 == 0)
+			document.getElementById("ifrmWorkOrderGuide").src = "/function/inc_WorkOrder_guide.asp?BOM_Sub_BS_D_No=" + frmCommonList.BOM_Sub_BS_D_No.value;
+		else
+			document.getElementById("ifrmWorkOrderGuide").src = "/function/inc_WorkOrder_guide.asp?BOM_Sub_BS_D_No=" + frmCommonList.BOM_Sub_BS_D_No[strExtraValue1].value;
+	}
+<%
+end if
+%>
+	frmWorkOrderGuide.strValue1.value	= strExtraValue1;
+	frmWorkOrderGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_WorkOrder_Guide()
+{
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_list.asp") > 0 or instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_plan_list.asp") > 0 then
+%>
+	document.getElementById("ifrmWorkOrderGuide").src = "about:blank";
+<%
+end if
+%>
+	divWorkOrder_Guide.style.display="none";
+}
+
+function OnDoubleClickWorkOrder(strValue)
+{
+	document.getElementById("ifrmWorkOrderGuide").src = "about:blank";
+	objWorkOrderGuide.value				= strValue;
+	objWorkOrderGuide.focus();
+	hide_WorkOrder_Guide();
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_list.asp") > 0 or instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_plan_list.asp") > 0 then
+%>
+
+<%
+else
+%>
+	document.getElementById("ifrmWorkOrderGuide").src = "/function/inc_WorkOrder_guide.asp";
+<%
+end if
+%>
+}
+</script>
+
+<div id="divWorkOrder_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmWorkOrderGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"pr_list.asp") > 0 then
+%>
+		<iframe id="ifrmWorkOrderGuide" src="about:blank" frameborder=0 width=250px height=286px></iframe>
+<%
+else
+%>
+		<iframe id="ifrmWorkOrderGuide" src="/function/inc_WorkOrder_guide.asp" frameborder=0 width=250px height=286px></iframe>
+<%
+end if
+%>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Parts_Guide()
+%>
+<script language="javascript">
+var objPartsGuide;
+
+function show_Parts_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objPartsGuide					= strObjectName
+	divParts_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divParts_Guide.style.posTop		= window.event.clientY + 0 + document.body.scrollTop;
+	divParts_Guide.style.display	= "block";
+
+	frmPartsGuide.strValue1.value	= strExtraValue1;
+	frmPartsGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_Parts_Guide()
+{
+	divParts_Guide.style.display="none";
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"pi_list.asp") > 0 or instr(lcase(Request.ServerVariables("HTTP_URL")),"po_list.asp") > 0 then
+%>
+	getParts_Info(frmPartsGuide.strValue1.value,frmPartsGuide.strValue2.value);
+<%
+end if
+%>
+}
+
+function OnDoubleClickParts(strValue)
+{
+	document.getElementById("ifrmPartsGuide").src = "about:blank";
+	objPartsGuide.value				= strValue;
+	objPartsGuide.focus();
+	hide_Parts_Guide();
+	document.getElementById("ifrmPartsGuide").src = "/function/inc_parts_guide.asp";
+}
+</script>
+
+<div id="divParts_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmPartsGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmPartsGuide" src="/function/inc_parts_guide.asp" frameborder=0 width=250px height=286px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Material_Guide()
+%>
+<script language="javascript">
+var objMaterialGuide;
+
+function show_Material_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objMaterialGuide				= strObjectName
+	divMaterial_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divMaterial_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divMaterial_Guide.style.display	= "block";
+
+	frmMaterialGuide.strValue1.value	= strExtraValue1;
+	frmMaterialGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_Material_Guide()
+{
+	divMaterial_Guide.style.display="none";
+}
+
+function OnDoubleClickMaterial(strValue)
+{
+	document.getElementById("ifrmMaterialGuide").src = "about:blank";
+	objMaterialGuide.value			= strValue;
+	objMaterialGuide.focus();
+	hide_Material_Guide();
+	document.getElementById("ifrmMaterialGuide").src = "/function/inc_Material_guide.asp";
+}
+</script>
+
+<div id="divMaterial_Guide" style="z-index:20; width:50px;height:50px;position:absolute;display:none;border:1px solid #999999; background-color:white;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmMaterialGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmMaterialGuide" src="/function/inc_Material_guide.asp" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub BOMPNO_Guide(strValue1)
+%>
+<script language="javascript">
+var objBOMPNOGuide;
+
+function show_BOMPNO_Guide(strObjectName, strExtraValue1)
+{
+	objBOMPNOGuide				= strObjectName
+	divBOMPNO_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divBOMPNO_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divBOMPNO_Guide.style.display	= "block";
+
+	frmBOMPNOGuide.strValue1.value	= strExtraValue1;
+}
+
+function hide_BOMPNO_Guide()
+{
+	divBOMPNO_Guide.style.display="none";
+}
+
+function OnDoubleClickBOMPNO(strValue)
+{
+	document.getElementById("ifrmBOMPNOGuide").src = "about:blank";
+	objBOMPNOGuide.value			= strValue;
+	objBOMPNOGuide.focus();
+	hide_BOMPNO_Guide();
+	document.getElementById("ifrmBOMPNOGuide").src = "/function/inc_BOMPNO_guide.asp?strValue1=<%=strValue1%>";
+}
+</script>
+
+<div id="divBOMPNO_Guide" style="z-index:20; width:50px;height:50px;position:absolute;display:none;border:1px solid #999999; background-color:white;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmBOMPNOGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="<%=strValue1%>">
+<tr>
+	<td>
+		<iframe id="ifrmBOMPNOGuide" src="/function/inc_BOMPNO_guide.asp?strValue1=<%=strValue1%>" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Partner_Guide()
+%>
+<script language="javascript">
+var objPartnerGuide;
+
+function show_Partner_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objPartnerGuide					= strObjectName
+	divPartner_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divPartner_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divPartner_Guide.style.display	= "block";
+
+	frmPartnerGuide.strValue1.value	= strExtraValue1;
+	frmPartnerGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_Partner_Guide()
+{
+	divPartner_Guide.style.display="none";
+}
+
+function OnDoubleClickPartner(strValue)
+{
+	document.getElementById("ifrmPartnerGuide").src	= "about:blank";
+	objPartnerGuide.value			= strValue;
+	objPartnerGuide.focus();
+	hide_Partner_Guide();
+	document.getElementById("ifrmPartnerGuide").src	= "/function/inc_Partner_guide.asp";
+}
+</script>
+
+<div id="divPartner_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmPartnerGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmPartnerGuide" src="/function/inc_Partner_guide.asp" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Partner_Guide_Selling()
+%>
+<script language="javascript">
+var objPartnerGuide;
+
+function show_Partner_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objPartnerGuide					= strObjectName
+	divPartner_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divPartner_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divPartner_Guide.style.display	= "block";
+
+	frmPartnerGuide.strValue1.value	= strExtraValue1;
+	frmPartnerGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_Partner_Guide()
+{
+	divPartner_Guide.style.display="none";
+}
+
+function OnDoubleClickPartner(strValue)
+{
+	document.getElementById("ifrmPartnerGuide").src	= "about:blank";
+	objPartnerGuide.value			= strValue;
+	objPartnerGuide.focus();
+	hide_Partner_Guide();
+	document.getElementById("ifrmPartnerGuide").src	= "/function/inc_Partner_guide.asp";
+}
+</script>
+
+<div id="divPartner_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmPartnerGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmPartnerGuide" src="/function/inc_Partner_guide.asp?s_P_type=Selling" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Partner_Guide_Purchasing()
+%>
+<script language="javascript">
+var objPartnerGuide;
+
+function show_Partner_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objPartnerGuide					= strObjectName
+	divPartner_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divPartner_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divPartner_Guide.style.display	= "block";
+
+	frmPartnerGuide.strValue1.value	= strExtraValue1;
+	frmPartnerGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_Partner_Guide()
+{
+	divPartner_Guide.style.display="none";
+}
+
+function OnDoubleClickPartner(strValue)
+{
+	document.getElementById("ifrmPartnerGuide").src	= "about:blank";
+	objPartnerGuide.value			= strValue;
+	objPartnerGuide.focus();
+	hide_Partner_Guide();
+	document.getElementById("ifrmPartnerGuide").src	= "/function/inc_Partner_guide.asp";
+}
+</script>
+
+<div id="divPartner_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmPartnerGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmPartnerGuide" src="/function/inc_Partner_guide.asp?s_P_type=Purchasing" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub BOM_Guide()
+%>
+<script language="javascript">
+var objBOMGuide;
+
+function show_BOM_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objBOMGuide					= strObjectName
+	divBOM_Guide.style.posLeft	= window.event.clientX  + 0 + document.body.scrollLeft;
+	divBOM_Guide.style.posTop	= window.event.clientY  + 0 + document.body.scrollTop;
+	divBOM_Guide.style.display	= "block";
+
+	frmBOMGuide.strValue1.value	= strExtraValue1;
+	frmBOMGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_BOM_Guide()
+{
+	divBOM_Guide.style.display="none";
+}
+
+function OnDoubleClickBOM(strValue)
+{
+	document.getElementById("ifrmBOMGuide").src	= "about:blank";
+	objBOMGuide.value			= strValue;
+	hide_BOM_Guide();
+	document.getElementById("ifrmBOMGuide").src	= "/function/inc_bom_guide.asp";
+}
+</script>
+
+<div id="divBOM_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmBOMGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmBOMGuide" src="/function/inc_bom_guide.asp" frameborder=0 width=250px height=286px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub BOMVersion_Guide()
+%>
+<script language="javascript">
+var objBOMVersionGuide;
+
+function show_BOMVersion_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objBOMVersionGuide					= strObjectName
+	divBOMVersion_Guide.style.posLeft	= window.event.clientX  + 0 + document.body.scrollLeft;
+	divBOMVersion_Guide.style.posTop	= window.event.clientY  + 0 + document.body.scrollTop;
+	divBOMVersion_Guide.style.display	= "block";
+
+	frmBOMVersionGuide.strValue1.value	= strExtraValue1;
+	frmBOMVersionGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_BOMVersion_Guide()
+{
+	divBOMVersion_Guide.style.display="none";
+}
+
+function OnDoubleClickBOMVersion(strValue)
+{
+	document.getElementById("ifrmBOMVersionGuide").src = "about:blank";
+	objBOMVersionGuide.value			= strValue;
+	hide_BOMVersion_Guide();
+	document.getElementById("ifrmBOMVersionGuide").src	= "/function/inc_bom_version_guide.asp";
+}
+</script>
+
+<div id="divBOMVersion_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmBOMVersionGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmBOMVersionGuide" src="/function/inc_bom_version_guide.asp" frameborder=0 width=250px height=286px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub BOMSubVersion_Guide()
+%>
+<script language="javascript">
+var objBOMSubVersionGuide;
+		 
+function show_BOMSubVersion_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objBOMSubVersionGuide					= strObjectName
+	divBOMSubVersion_Guide.style.posLeft	= window.event.clientX  + 0 + document.body.scrollLeft;
+	divBOMSubVersion_Guide.style.posTop		= window.event.clientY  + 0 + document.body.scrollTop;
+	divBOMSubVersion_Guide.style.display	= "block";
+
+	frmBOMSubVersionGuide.strValue1.value	= strExtraValue1;
+	frmBOMSubVersionGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_BOMSubVersion_Guide()
+{
+	divBOMSubVersion_Guide.style.display="none";
+}
+
+function OnDoubleClickBOMSubVersion(strValue)
+{
+	document.getElementById("ifrmBOMSubVersionGuide").src = "about:blank";
+	objBOMSubVersionGuide.value				= strValue;
+	hide_BOMSubVersion_Guide();
+	document.getElementById("ifrmBOMSubVersionGuide").src = "/function/inc_bom_sub_version_guide.asp";
+}
+</script>
+
+<div id="divBOMSubVersion_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmBOMSubVersionGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmBOMSubVersionGuide" src="/function/inc_bom_sub_version_guide.asp" frameborder=0 width=250px height=286px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+
+<%
+sub BOMSub_Guide()
+%>
+<script language="javascript">
+var objBOMSubGuide;
+
+function show_BOMSub_Guide(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objBOMSubGuide					= strObjectName
+	divBOMSub_Guide.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divBOMSub_Guide.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divBOMSub_Guide.style.display	= "block";
+
+	frmBOMSubGuide.strValue1.value	= strExtraValue1;
+	frmBOMSubGuide.strValue2.value	= strExtraValue2;
+}
+
+function hide_BOMSub_Guide()
+{
+	divBOMSub_Guide.style.display="none";
+}
+
+function OnDoubleClickBOMSub(strValue)
+{
+	document.getElementById("ifrmBOMSubGuide").src = "about:blank";
+	objBOMSubGuide.value			= strValue;
+	hide_BOMSub_Guide();
+	document.getElementById("ifrmBOMSubGuide").src = "/function/inc_bom_sub_guide.asp";
+}
+</script>
+
+<div id="divBOMSub_Guide" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=250px cellpadding=0 cellspacing=0 border=0>
+<form name="frmBOMSubGuide" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmBOMSubGuide" src="/function/inc_bom_sub_guide.asp" frameborder=0 width=250px height=286px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Material_Price_Log_Popup_List()
+%>
+<script language="javascript">
+var objMaterialPriceLogPopupList;
+
+function show_Material_Price_Log_Popup_List(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objMaterialPriceLogPopupList				= strObjectName
+	divMaterial_Price_Log_Popup_List.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divMaterial_Price_Log_Popup_List.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divMaterial_Price_Log_Popup_List.style.display	= "block";
+
+	frmMaterialPriceLogPopupList.strValue1.value	= strExtraValue1;
+	frmMaterialPriceLogPopupList.strValue2.value	= strExtraValue2;
+	
+	document.getElementById("ifrmMaterialPriceLogPopupList").src = "/function/inc_Material_Price_Log_Popup_List.asp?s_Material_M_P_No="+strExtraValue1;
+}
+
+function hide_Material_Price_Log_Popup_List()
+{
+	divMaterial_Price_Log_Popup_List.style.display="none";
+}
+</script>
+
+<div id="divMaterial_Price_Log_Popup_List" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmMaterialPriceLogPopupList" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmMaterialPriceLogPopupList" src="/function/inc_Material_Price_Log_Popup_List.asp" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+
+<%
+sub Material_Qty_Log_Popup_List()
+%>
+<script language="javascript">
+var objMaterialQtyLogPopupList;
+
+function show_Material_Qty_Log_Popup_List(strObjectName, strExtraValue1, strExtraValue2)
+{
+	objMaterialQtyLogPopupList				= strObjectName
+	divMaterial_Qty_Log_Popup_List.style.posLeft	= window.event.clientX + 0 + document.body.scrollLeft;
+	divMaterial_Qty_Log_Popup_List.style.posTop	= window.event.clientY + 0 + document.body.scrollTop;
+	divMaterial_Qty_Log_Popup_List.style.display	= "block";
+
+	frmMaterialQtyLogPopupList.strValue1.value	= strExtraValue1;
+	frmMaterialQtyLogPopupList.strValue2.value	= strExtraValue2;
+	
+	document.getElementById("ifrmMaterialQtyLogPopupList").src = "/function/inc_Material_Qty_Log_Popup_List.asp?s_Material_M_P_No="+strExtraValue1;
+}
+
+function hide_Material_Qty_Log_Popup_List()
+{
+	divMaterial_Qty_Log_Popup_List.style.display="none";
+}
+</script>
+
+<div id="divMaterial_Qty_Log_Popup_List" style="width:50px;height:50px;position:absolute;display:none;border:1px solid #999999;">
+<table width=450px cellpadding=0 cellspacing=0 border=0>
+<form name="frmMaterialQtyLogPopupList" action="#" method="post">
+<input type="hidden" name="strValue1" value="">
+<input type="hidden" name="strValue2" value="">
+<tr>
+	<td>
+		<iframe id="ifrmMaterialQtyLogPopupList" src="/function/inc_Material_Qty_Log_Popup_List.asp" frameborder=0 width=450px height=417px></iframe>
+	</td>
+</tr>
+</form>
+</table>
+</div>
+<%
+end sub
+%>
+
+
+<%
+sub Update_History(strType, strTable, strPK, strColumn, strValue)
+	dim SQL
+	dim RS1
+	dim Change_YN
+	dim Update_Date
+
+	Update_Date = date()
+
+	Change_YN = "Y"
+	set RS1 = Server.CreateObject("ADODB.RecordSet")
+	SQL = "select top 1 CH_Value from "&strType&" where CH_Table='"&strTable&"' and CH_PK='"&strPK&"' and CH_Column='"&strColumn&"' order by CH_Update_Date desc"
+	RS1.Open SQL,sys_DBCon
+	if not(RS1.Eof or RS1.Bof) then
+		if cstr(strValue) = cstr(RS1("CH_Value")) then
+			Change_YN = "N"
+		end if
+	end if
+	RS1.Close
+	set RS1 = nothing
+
+	if Change_YN = "Y" then
+		SQL = "insert into "&strType&" (CH_Table, CH_PK, CH_Column, CH_Value, CH_Update_Date) values ('"&strTable&"','"&strPK&"','"&strColumn&"','"&strValue&"','"&Update_Date&"')"
+		sys_DBCon.execute(SQL)
+	end if
+end sub
+%>
+
+<%
+sub File_Delete(strFile)
+	dim FSO
+	set FSO = Server.CreateObject("Scripting.FileSystemObject")
+	if FSO.FileExists(strFile) then
+		FSO.DeleteFile(strFile)
+	end if
+	set FSO = nothing
+end sub
+%>
+
+<%
+sub inc_Common_List_Reg_Form(URL_Reg, Colspan, strRequestQueryString, strSelect, arrRecordSet, strWidth, strReg, strAlign, strWidth_Total, cntMultiLine)
+	dim CNT1
+	dim CNT2
+	dim CNT3
+	
+	dim CNT4
+
+	dim strEdit
+	strEdit = strReg
+
+	dim strRequestQueryString_dummy
+
+	dim nPaddingTop
+
+	dim arrWidth
+	dim strWidth_Cal
+
+	dim arrSelect
+	dim arrEdit
+	dim arrAlign
+
+	dim arrInputSelectG
+	dim arrInputSelect
+
+	dim strDefaultSLT
+	dim arrDefaultSLT
+
+	arrWidth	= split(strWidth,",")
+	arrSelect	= split(strSelect,",")
+	arrEdit		= split(strEdit,",")
+	arrAlign	= split(strAlign,",")
+
+	dim strHeight
+
+	if instr(strEdit,"mem") > 0 then
+		strHeight = "40"
+		nPaddingTop = "14"
+	else
+		strHeight = "20"
+		nPaddingTop = "4"
+	end if
+%>
+
+<script language="javascript">
+function Row_Copy()
+{
+	var strSelect = "<%=strSelect%>";
+	var arrSelect = new Array();
+	arrSelect			= strSelect.split(",");
+	
+	var strEdit		= "<%=strEdit%>";
+	var arrEdit 	= new Array();
+	arrEdit				= strEdit.split(",");
+	
+	var objSource;
+	var objTarget;
+	
+	for(var i = 0; i < arrSelect.length; i++)
+	{
+		if (arrEdit[i] != "")
+		{	
+			objSource = eval("frmCommonListReg." + arrSelect[i] + "[0]");
+			if (objSource.value != "")
+			{
+				for(var j = 1; j < <%=cntMultiLine%>; j++)
+				{	
+					objTarget = eval("frmCommonListReg." + arrSelect[i] + "[" + j + "]");
+					objTarget.value = objSource.value;
+				}
+			}
+		}
+	}
+}
+</script>
+<div id=idRegForm style="display:none;">
+<table width="<%=strWidth_Total%>px" border=0 cellspacing=1 cellpadding=0 bgcolor="#999999" class="Common_List_Reg_Form">
+<form name="frmCommonListReg" action="<%=URL_Reg%>?dummy=<%=strRequestQueryString%>" method="post">
+<tr height=33px bgcolor="#e0e0e0">
+<%
+	for CNT1 = 0 to ubound(arrSelectName)
+		if arrSelectName(CNT1) = "üũ" then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>>&nbsp;</td>
+<%
+		elseif arrSelectName(CNT1) = " ۾ " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>>&nbsp;</td>
+<%
+		elseif arrSelectName(CNT1) = "    " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>>&nbsp;</td>
+<%
+		else
+			if arrSelectName(0) = "üũ" then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"><%=arrSelectName(CNT1)%></b></td>
+<%
+			else
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"><%=arrSelectName(CNT1)%></b></td>
+<%
+			end if
+		end if
+	next
+%>
+</tr>
+<%
+for CNT4=1 to cntMultiLine '  Ƽ  űԵ            ġ
+%>
+<tr height=<%=strHeight%>px bgcolor="<%if (CNT2 mod 2) = 0 then%>#ffffff<%else%>#ffffff<%end if%>" valign=top onmouseover="this.style.backgroundColor='#eeeeee';" onmouseout="this.style.backgroundColor='<%if (CNT2 mod 2) = 0 then%>#ffffff<%else%>#ffffff<%end if%>';">
+<%
+		if arrSelectName(0)="üũ" then
+%>
+			<td<%if arrWidth(0) <> "" then%> width="<%=arrWidth(0)%>px"<%end if%>>&nbsp;</td>
+<%
+		end if
+
+		if arrSelectName(0)="üũ" then
+			strWidth_Cal = arrWidth(1)
+		else
+			strWidth_Cal = arrWidth(0)
+		end if
+
+		for CNT1 = 0 to ubound(arrRecordSet,1)
+			if arrEdit(CNT1) <> "" then
+				select case left(arrEdit(CNT1),3)
+				case "txt"
+					if len(arrEdit(CNT1)) > 3 then
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=right(arrEdit(CNT1),len(arrEdit(CNT1))-3)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px; "></td>
+<%
+					else
+						if instr(lcase(Request.ServerVariables("URL")),"/mtd_list.asp") > 0 then '   ڵ   Է             
+%>
+<script language="javascript">
+function MTD_Save()
+{
+	if(event.keyCode == 13)
+	{
+		List_Reg();
+	}
+}
+</script>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" onkeyup="javascript:MTD_Save();" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px; "></td>
+<%
+						else
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px; "></td>
+<%
+						end if
+					end if
+				case "mem"
+%>
+			<td><textarea wrap="soft" name="<%=arrSelect(CNT1)%>" class=input rows=2 style="width:100%;height:<%=strHeight-1%>px;overflow:auto;text-align:<%=arrAlign(CNT1)%>;padding-top:<%=nPaddingTop%>px;" scrollbar=auto></textarea></td>
+<%
+				case "w/o"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_WorkOrder_Guide(this,'NEW');" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "pno"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_Parts_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "mtr"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_Material_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "ptn"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_Partner_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "dn1"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_BOM_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "dn2"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" readonly onclick="javascript:show_BOMSub_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "num"
+%>
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+				case "mny"
+%>				
+			<td><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>			
+<%
+				case "dt1"
+					if len(arrEdit(CNT1)) > 3 then
+%>
+			<td><input type="text" readonly size=10 name="<%=arrSelect(CNT1)%>" value="<%=right(arrEdit(CNT1),len(arrEdit(CNT1))-3)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;" onclick="Calendar_D(this)"></td>
+<%
+					else
+%>
+			<td><input type="text" readonly size=10 name="<%=arrSelect(CNT1)%>" value="" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;" onclick="Calendar_D(this)"></td>
+<%
+					end if
+				case "slt"
+					if instr(arrEdit(CNT1),"/d") > 0 then
+						dim arrTemp
+						arrDefaultSLT = split(arrEdit(CNT1),"/d")
+						arrInputSelectG	= split(replace(arrDefaultSLT(0),"slt>",""),";")
+						strDefaultSLT	= arrDefaultSLT(1)
+					else
+						arrInputSelectG	= split(replace(arrEdit(CNT1),"slt>",""),";")
+					end if
+%>
+			<td valign=middle><select name="<%=arrSelect(CNT1)%>">
+				<option value="">-    -</option>
+<%
+					for CNT3 = 0 to ubound(arrInputSelectG)
+						arrInputSelect = split(arrInputSelectG(CNT3),":")
+						if arrInputSelect(0) = "-1" then
+							arrInputSelect(0) = ""
+						elseif isnull(arrInputSelect(0)) then
+							arrInputSelect(0) = ""
+						end if
+%>
+				<option value="<%=arrInputSelect(0)%>"<%if arrInputSelect(0)=strDefaultSLT then%> selected<%end if%>><%=arrInputSelect(1)%></option>
+<%
+					next
+%>
+			</select></td>
+<%
+				end select
+			else
+				if arrSelectName(0)="üũ" then
+%>
+			<td align="<%=arrAlign(CNT1)%>"><textarea rows=1 readonly style="width:<%if arrSelectName(CNT1+1)="  ȣ" then%><%=strWidth_Cal%><%else%><%=arrWidth(CNT1)%><%end if%>px;height:<%=strHeight-1%>px;overflow:auto;text-align:center;padding-top:<%=nPaddingTop%>px;background-color:transparent"><%if arrSelectName(CNT1+1)="  ȣ" then%>NEW<%end if%></textarea></td>
+<%
+				else
+%>
+			<td align="<%=arrAlign(CNT1)%>"><textarea rows=1 readonly style="width:<%if arrSelectName(CNT1)="  ȣ" then%><%=strWidth_Cal%><%else%><%=arrWidth(CNT1)%><%end if%>px;height:<%=strHeight-1%>px;overflow:auto;text-align:center;padding-top:<%=nPaddingTop%>px;background-color:transparent"><%if arrSelectName(CNT1)="  ȣ" then%>NEW<%end if%></textarea></td>
+<%
+				end if
+			end if
+		next
+		if arrSelectName(ubound(arrSelectName))=" ۾ " then
+%>
+			<td>&nbsp;</td>
+<%
+		end if
+		if arrSelectName(ubound(arrSelectName))="    " then
+%>
+			<td>&nbsp;</td>
+<%
+		end if
+%>
+</tr>
+<%
+next '  Ƽ  űԵ     
+%>
+</form>
+</table>
+<img src="/img/blank.gif" width=1px height=10px><br>
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<tr>
+	<td align=center>
+		<table width=159px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+<%
+if cntMultiLine > 1 then
+%>
+			<td width=77px><%=Make_BTN(" űԵ  ","javascript:List_Reg_Multi();","")%></td>
+<%
+else
+%>
+			<td width=77px><%=Make_BTN(" űԵ  ","javascript:List_Reg();","")%></td>
+<%
+end if
+%>
+			<td width=5px><img src="/img/blank.gif" width=5px height=1px></td>
+			<td width=77px><%=Make_BTN("       ","javascript:frmCommonListReg.reset();","")%></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<img src="/img/blank.gif" width=1px height=10px><br>
+</div>
+<%
+end sub
+%>
+
+<%
+sub Common_Reg_Form(Title, URL_Action, URL_Next, URL_List, Form_Type, Column_Width, Value_Width, arrReg_Form)
+	dim CNT1
+%>
+<center>
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0>
+<form name="frmRegForm" action="<%=URL_Action%>" method="post" <%=Form_Type%>>
+<input type="hidden" name="URL_Next" value="<%=URL_Next%>">
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<tr height=28px>
+	<td align=center colspan=2><%=Title%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+	for CNT1=0 to ubound(arrReg_Form)
+%>
+<tr height=25px class="Common_Edit">
+	<td width="<%=Column_Width%>px"><%=arrReg_Form(CNT1,0)%></td>
+	<td width="<%=Value_Width%>px" align=left><%=arrReg_Form(CNT1,1)%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+next
+%>
+</form>
+</table>
+<br>
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0>
+<tr>
+	<td align=center>
+		<table width=210 cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=100><%=Make_L_BTN("  ϿϷ ","javascript:Form_Check(frmRegForm)","")%></td>
+			<td width=10></td>
+			<td width=100><%=Make_L_BTN("       ","javascript:frmList.submit()","")%></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+
+<form name="frmList" action="<%=URL_List%>" method="post">
+</form>
+</table>
+</center>
+<%
+end sub
+%>
+
+<%
+sub Common_Edit_Form(Title, URL_Action, URL_Next, URL_List, Form_Type, Column_Width, Value_Width, strEdit_Header, arrEdit_Form, strRequestForm)
+	dim CNT1
+%>
+<center>
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0 class="Common_Edit">
+<form name="frmEditForm" action="<%=URL_Action%>" method="post" <%=Form_Type%>>
+<input type="hidden" name="URL_Next" value="<%=URL_Next%>">
+<%
+	response.write strEdit_Header
+	response.write strRequestForm
+%>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<tr height=28px>
+	<td align=center colspan=2><%=Title%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+	for CNT1=0 to ubound(arrEdit_Form)
+%>
+<tr height=25px class="Common_Edit">
+	<td width="<%=Column_Width%>px"><%=arrEdit_Form(CNT1,0)%></td>
+	<td width="<%=Value_Width%>px" align=left><%=arrEdit_Form(CNT1,1)%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+next
+%>
+</form>
+</table>
+<br>
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0>
+<tr>
+	<td align=center>
+		<table width=210px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=100><%=Make_L_BTN("     Ϸ ","javascript:Form_Check(frmEditForm)","")%></td>
+			<td width=10></td>
+			<td width=100><%=Make_L_BTN("       ","javascript:frmList.submit()","")%></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+
+<form name="frmList" action="<%=URL_List%>" method="post">
+<%
+response.write strRequestForm
+%>
+</form>
+</table>
+</center>
+<%
+end sub
+%>
+
+<%
+sub Common_Edit_Form_EX(Title, URL_Action, URL_Next, URL_List, Form_Type, Form_Name, Column_Width, Value_Width, strEdit_Header, arrEdit_Form, strRequestForm, strAllowed)
+	dim CNT1
+%>
+<center>
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0 class="Common_Edit">
+<form name="<%=Form_Name%>" action="<%=URL_Action%>" method="post" <%=Form_Type%>>
+<input type="hidden" name="URL_Next" value="<%=URL_Next%>">
+<%
+	response.write strEdit_Header
+	response.write strRequestForm
+%>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<tr height=28px>
+	<td align=center colspan=2 bgcolor="#cccccc"><%=Title%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+	for CNT1=0 to ubound(arrEdit_Form)
+		if strAllowed = "N" then
+			arrEdit_Form(CNT1,1) = replace(arrEdit_Form(CNT1,1),"style=''"," style='background-color:#efefef' ")
+		end if
+%>
+<tr height=25px class="Common_Edit">
+	<td width="<%=Column_Width%>px"><%=arrEdit_Form(CNT1,0)%></td>
+	<td width="<%=Value_Width%>px" align=left><%=arrEdit_Form(CNT1,1)%></td>
+</tr>
+<tr bgcolor="#999999"><td height=1px colspan=2><img src="/img/blank.gif" width=1px height=1px></td></tr>
+<%
+	next
+%>
+</form>
+</table>
+<br>
+
+<table width="<%=Column_Width+Value_Width%>px" border=0 cellspacing=0 cellpadding=0>
+<%if strAllowed = "N" then%>
+<tr>
+	<td align=center>
+		<table width=100px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=100><%=Make_L_BTN("       ","javascript:"&Form_Name&"_frmList.submit()","")%></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<%else%>
+<tr>
+	<td align=center>
+		<table width=210px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			
+			<td width=100><%=Make_L_BTN("     Ϸ ","javascript:"&Form_Name&"_Check()","")%></td>
+			<td width=10></td>
+			
+			<td width=100><%=Make_L_BTN("       ","javascript:"&Form_Name&"_frmList.submit()","")%></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<%end if%>
+<form name="<%=Form_Name%>_frmList" action="<%=URL_List%>" method="post">
+<%
+response.write strRequestForm
+%>
+</form>
+</table>
+</center>
+<%
+end sub
+%>
+
+<%
+function getRequestQueryString()
+	dim strRequestQueryString
+	dim Request_Fields
+
+	strRequestQueryString = ""
+	for each Request_Fields in Request.QueryString
+		if lcase(left(Request_Fields,2))="s_" then
+			strRequestQueryString = strRequestQueryString & "&"&Request_Fields&"="&server.URLEncode(Request(Request_Fields))
+		end if
+	next
+	for each Request_Fields in Request.Form
+		if lcase(left(Request_Fields,2))="s_" then
+			strRequestQueryString = strRequestQueryString & "&"&Request_Fields&"="&server.URLEncode(Request(Request_Fields))
+		end if
+	next
+	getRequestQueryString = strRequestQueryString
+end function
+%>
+
+<%
+function getRecordSet(URL_This, S_PageNo, S_PageSize, strTable, strPK, strSelect, strWhere, strOrderBy, strGroupBy)
+	dim CNT1
+
+	dim RS1
+	dim RS2
+	dim SQL
+
+	dim arrRecordSet
+	dim strQuery
+	
+	dim TotalRecordCount
+
+	dim arrSelect
+	arrSelect = split(strSelect,",")
+
+	if request("Postback_yn")="N" then 
+		ReDim arrRecordSet(ubound(arrSelect),0)
+		arrRecordSet(0,0) = TotalRecordCount
+		'response.write "test"
+	else
+		strQuery	=	"{Call SELECT_WITH_PAGING('"&strSelect&"','"&strPK&"','"&strTable&"',"&S_PageNo&","&S_PageSize&",1,'"&strWhere&"','"&strOrderBy&"','"&strGroupBy&"')}"
+		'response.write strQuery
+		set RS1 = sys_DBCon.Execute(strQuery)
+		if RS1.Eof or RS1.Bof then
+			ReDim arrRecordSet(ubound(arrSelect),0)
+			arrRecordSet(0,0) = TotalRecordCount
+		else
+			arrRecordSet = RS1.GetRows(S_PageSize,0)
+			set RS2 = RS1.NextRecordSet
+			TotalRecordCount = RS2(0)
+			RS2.Close
+			set RS2 = nothing
+	
+			ReDim Preserve arrRecordSet(ubound(arrRecordSet,1), ubound(arrRecordSet,2)+1)
+			arrRecordSet(0,ubound(arrRecordSet,2)) = TotalRecordCount
+		end if
+		set RS1 = nothing
+	end if
+
+	getRecordSet = arrRecordSet
+end function
+%>
+
+<%
+sub inc_Common_List(strID, strID_Pos, S_PageNo, URL_This,URL_View, URL_Action, arrSelectName, strSelect, arrRecordSet, TotalRecordCount, Colspan, strRequestQueryString, S_Order_By_1, S_Order_By_2, strPopup, strDown, strWidth, strEdit, strAlign, strWidth_Total)
+	dim CNT1
+	dim CNT2
+	dim CNT3
+
+	dim strRequestQueryString_dummy
+
+	dim nPaddingTop
+
+	dim arrWidth
+	dim strWidth_Cal
+
+	dim arrSelect
+	dim arrEdit
+	dim arrPopup
+	dim arrDown
+	dim arrAlign
+
+
+	dim arrInputSelectG
+	dim arrInputSelect
+	
+	dim strURL_View
+
+	arrWidth	= split(strWidth,",")
+	arrSelect	= split(strSelect,",")
+	arrEdit		= split(strEdit,",")
+	arrPopup	= split(strPopup,",")
+	arrDown		= split(strDown,",")
+	arrAlign	= split(strAlign,",")
+
+	dim strHeight
+
+	if instr(strEdit,"mem") > 0 then
+		strHeight = "40"
+		nPaddingTop = "14"
+	else
+		strHeight = "20"
+		nPaddingTop = "4"
+	end if
+
+	if TotalRecordCount = "" then
+		TotalRecordCount = 0
+	end if
+%>
+<script language="javascript">
+
+function Check_All(form)
+{
+	var cnt1;
+
+	if(frmCommonList.strID.length)
+	{
+		if(frmCommonList.Check_All_YN.checked == true)
+		{
+			for (cnt1 = 0; cnt1 < frmCommonList.strID.length; cnt1++)
+				frmCommonList.strID[cnt1].checked = true;
+		}
+		else if(form.Check_All_YN.checked == false)
+		{
+			for (cnt1 = 0; cnt1 < frmCommonList.strID.length; cnt1++)
+				frmCommonList.strID[cnt1].checked = false;
+		}
+	}
+	else
+	{
+		if(frmCommonList.Check_All_YN.checked == true)
+		{
+			frmCommonList.strID.checked = true;
+		}
+		else if(frmCommonList.Check_All_YN.checked == false)
+		{
+			frmCommonList.strID.checked = false;
+		}
+	}
+}
+
+function GetChecked_Value()
+{
+	var strChecked_Value = "";
+
+	if(frmCommonList.strID.length)
+	{
+		for (cnt1 = 0; cnt1 < frmCommonList.strID.length; cnt1++)
+		{
+			if(frmCommonList.strID[cnt1].checked == true)
+			{
+				strChecked_Value += frmCommonList.strID[cnt1].value + ",";
+			}
+		}
+	}
+	else
+	{
+		if(frmCommonList.strID.checked == true)
+		{
+			strChecked_Value += frmCommonList.strID.value + ",";
+		}
+	}
+	return strChecked_Value;
+}
+
+function setSorting(S_Order_By_1,S_Order_By_2)
+{
+<%
+strRequestQueryString_dummy = strRequestQueryString
+strRequestQueryString_dummy = replace(strRequestQueryString_dummy,"S_Order_By_1=","Dummy_Order_By_1=")
+strRequestQueryString_dummy = replace(strRequestQueryString_dummy,"S_Order_By_2=","Dummy_Order_By_2=")
+strRequestQueryString_dummy = replace(strRequestQueryString_dummy,"S_Order_By_3=","Dummy_Order_By_3=")
+strRequestQueryString_dummy = replace(strRequestQueryString_dummy,"S_Order_By_4=","Dummy_Order_By_4=")
+%>
+	if ("<%=lcase(S_Order_By_1)%>"==S_Order_By_1.toLowerCase())
+	{
+		location.href="<%=URL_This%>?S_Order_By_1="+S_Order_By_1+"&S_Order_By_2="+S_Order_By_2+"<%=strRequestQueryString_dummy%>";
+	}
+	else if ("<%=S_Order_By_1%>"=="")
+	{
+		location.href="<%=URL_This%>?S_Order_By_1="+S_Order_By_1+"&S_Order_By_2="+S_Order_By_2+"<%=strRequestQueryString_dummy%>";
+	}
+	else
+	{
+		location.href="<%=URL_This%>?S_Order_By_1="+S_Order_By_1+"&S_Order_By_2="+S_Order_By_2+"&S_Order_By_3=<%=S_Order_By_1%>&S_Order_By_4=<%=S_Order_By_2%><%=strRequestQueryString_dummy%>";
+	}
+}
+
+function Delete_Check(strID_Value)
+{
+	if(confirm("          Ͻðڽ  ϱ ?"))
+	{
+		location.href="<%=URL_View%>?<%=strID%>="+strID_Value+"<%=strRequestQueryString%>";
+	}
+}
+
+function Delete_Check2(strID_Value)
+{
+	if(confirm("          Ͻðڽ  ϱ ?"))
+	{
+		location.href="<%=replace(lcase(URL_Action),"_list_","_del_")%>?<%=strID%>="+strID_Value+"<%=strRequestQueryString%>";
+	}
+}
+
+function Row_Copy_In_Date()
+{	
+<%
+	for CNT2 = 1 to ubound(arrRecordSet,2)-1
+%>
+		frmCommonList.MOD_In_Date[<%=CNT2%>].value = frmCommonList.MOD_In_Date[0].value;
+<%
+	next
+%>
+}
+
+function BOMPrint(BU_Code)
+{
+
+	if(confirm('        μ  մϴ .\n μ  â               ø    ٷ  ּ   .'))
+	{	
+		window.open("/bom/db_load_action.asp?BU_Code="+BU_Code+"&mode=print","BOMPrint","height=100px,width=100px,top=2000px,lef=2000px,status=yes,toolbar=yes,location=yes,directories=yes,location=yes,menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes")
+	}
+	
+}
+</script>
+
+<table width="<%=strWidth_Total%>px" cellpadding=0 cellspacing=0 border=0>
+<tr>
+	<td align=left>&nbsp;<span style="font-face:    :font-size:8pt"><span style='color:red'><%=TotalRecordCount%>  </span>    ˻  Ǿ    ϴ .
+		<img src="/img/blank.gif" width=5px>
+<%
+	response.write "        ı     "
+	for CNT1 = 0 to ubound(arrSelect)
+		if lcase(arrSelect(CNT1)) = lcase(S_Order_By_1) then
+			response.write "<span style='color:red'>"
+			if arrSelectName(0)="üũ" then
+				response.write "  " & arrSelectName(CNT1+1)
+			else
+				response.write "  " & arrSelectName(CNT1)
+			end if
+
+		end if
+	next
+
+	if lcase(S_Order_By_2) = "asc" then
+		response.write " -         " & "  "
+	else
+		response.write " -         " & "  "
+	end if
+	response.write "</span>"
+
+	if S_Order_By_3 <> "" then
+		response.write ","
+		for CNT1 = 0 to ubound(arrSelect)
+			if lcase(arrSelect(CNT1)) = lcase(S_Order_By_3) then
+				response.write "<span style='color:blue'>"
+				if arrSelectName(0)="üũ" then
+					response.write "  " & arrSelectName(CNT1+1)
+				else
+					response.write "  " & arrSelectName(CNT1)
+				end if
+			end if
+		next
+
+		if lcase(S_Order_By_4) = "asc" then
+			response.write " -         " & "  "
+		else
+			response.write " -         " & "  "
+		end if
+		response.write "</span>"
+	end if
+
+	response.write " Դϴ .</span>"
+%>
+	</td>
+</tr>
+</table>
+<img src="/img/blank.gif" width=1px height=3px><br>
+<table width="<%=strWidth_Total%>px" border=0 cellspacing=1 cellpadding=0 bgcolor="#999999" class="Common_List">
+<form name="frmCommonList" action="<%=URL_Action%>?dummy=<%=strRequestQueryString%>" method="post">
+<tr height=33px bgcolor="#e0e0e0">
+<%
+	for CNT1 = 0 to ubound(arrSelectName)
+		if arrSelectName(CNT1) = "üũ" then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><input type="checkbox" name="Check_All_YN" style="border:0px none #ffffff;background-color:#ffffff" onclick="javascript:Check_All(frmCommonList)"></td>
+<%
+		elseif arrSelectName(CNT1) = " ۾ " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"><%=arrSelectName(CNT1)%></b></td>
+<%
+		elseif arrSelectName(CNT1) = " ۾ _      " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"> ۾ </b></td>
+<%
+		elseif arrSelectName(CNT1) = " ۾ _    " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"><%=arrSelectName(CNT1)%></b></td>
+<%
+		elseif arrSelectName(CNT1) = "    " then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%>><b style="color:navy"><%=arrSelectName(CNT1)%></b></td>
+<%
+		else
+			if arrSelectName(0) = "üũ" then
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%> style="line-height:10px"><span style="cursor:hand;" onclick="javascript:setSorting('<%=arrSelect(CNT1-1)%>','ASC')"><img src="/img/ico_sorting_up<%if lcase(S_Order_By_1) = lcase(arrSelect(CNT1-1)) and lcase(S_Order_By_2) = "asc" then%>_Red<%elseif lcase(S_Order_By_3) = lcase(arrSelect(CNT1-1)) and lcase(S_Order_By_4) = "asc" then%>_Blue<%end if%>.gif"></span><br><img src="/img/blank.gif" width=1px height=3px><br><b style="color:navy"><%=arrSelectName(CNT1)%></b><br><span style="cursor:hand;" onclick="javascript:setSorting('<%=arrSelect(CNT1-1)%>','DESC')"><img src="/img/ico_sorting_down<%if lcase(S_Order_By_1) = lcase(arrSelect(CNT1-1)) and lcase(S_Order_By_2) = "desc" then%>_Red<%elseif lcase(S_Order_By_3) = lcase(arrSelect(CNT1-1)) and lcase(S_Order_By_4) = "desc" then%>_Blue<%end if%>.gif"></span></td>
+<%
+			else
+%>
+	<td<%if arrWidth(CNT1) <> "" then%> width="<%=arrWidth(CNT1)%>px"<%end if%> style="line-height:10px"><span style="cursor:hand;" onclick="javascript:setSorting('<%=arrSelect(CNT1)%>','ASC')"><img src="/img/ico_sorting_up<%if lcase(S_Order_By_1) = lcase(arrSelect(CNT1)) and lcase(S_Order_By_2) = "asc" then%>_Red<%elseif lcase(S_Order_By_3) = lcase(arrSelect(CNT1)) and lcase(S_Order_By_4) = "asc" then%>_Blue<%end if%>.gif"></span><br><img src="/img/blank.gif" width=1px height=3px><br><b style="color:navy"><%=arrSelectName(CNT1)%></b><br><span style="cursor:hand;" onclick="javascript:setSorting('<%=arrSelect(CNT1)%>','DESC')"><img src="/img/ico_sorting_down<%if lcase(S_Order_By_1) = lcase(arrSelect(CNT1)) and lcase(S_Order_By_2) = "desc" then%>_Red<%elseif lcase(S_Order_By_3) = lcase(arrSelect(CNT1)) and lcase(S_Order_By_4) = "desc" then%>_Blue<%end if%>.gif"></span></td>
+<%
+			end if
+		end if
+	next
+%>
+</tr>
+<%
+	if request("Postback_yn")<>"N" then
+		for CNT2 = 0 to ubound(arrRecordSet,2)-1
+%>
+<tr height=<%=strHeight%>px bgcolor="<%if (CNT2 mod 2) = 0 then%>#ffffff<%else%>#ffffff<%end if%>" valign=top onmouseover="this.style.backgroundColor='pink';" onmouseout="this.style.backgroundColor='<%if (CNT2 mod 2) = 0 then%>#ffffff<%else%>#ffffff<%end if%>';">
+<input type="hidden" name="strID_All" value="<%=arrRecordSet(strID_Pos, CNT2)%>">
+<%
+			if arrSelectName(0)="üũ" then
+%>
+			<td<%if arrWidth(0) <> "" then%> width="<%=arrWidth(0)%>px"<%end if%> valign=middle><input type="checkbox" name="strID" value="<%=arrRecordSet(strID_Pos, CNT2)%>" style="border:0px none #ffffff;background-color:<%if (CNT2 mod 2) = 0 then%>#FEFFD6<%else%>#ffffff<%end if%>"></td>
+<%
+			end if
+			for CNT1 = 0 to ubound(arrRecordSet,1)
+				if arrSelectName(0)="üũ" then
+					strWidth_Cal = arrWidth(CNT1 + 1)
+				else
+					strWidth_Cal = arrWidth(CNT1)
+				end if
+	
+				if arrEdit(CNT1) <> "" then
+					select case left(arrEdit(CNT1),3)
+					case "txt"
+						if instr(lcase(Request.ServerVariables("HTTP_URL")),"mod_list") > 0 then
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" onclick="javascript:if(this.value=='0'){this.value='';}" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px; "></td>
+<%						
+						else
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px; "></td>
+<%
+						end if
+					case "mem"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><textarea wrap="soft" name="<%=arrSelect(CNT1)%>" class=input rows=2 style="width:<%=strWidth_Cal%>px;height:<%=strHeight-1%>px;overflow:auto;text-align:<%=arrAlign(CNT1)%>;padding-top:<%=nPaddingTop%>px;" scrollbar=auto><%=arrRecordSet(CNT1, CNT2)%></textarea></td>
+<%
+					case "num"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "mny"
+						if instr(lcase(Request.ServerVariables("HTTP_URL")),"mod_list") > 0 then
+%>
+				<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" onclick="javascript:if(this.value=='0'){this.value='';}" size=10 name="<%=arrSelect(CNT1)%>" value="<%=replace(replace(arrRecordSet(CNT1, CNT2),"  ",""),",","")%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%						
+						else
+%>
+				<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=replace(replace(arrRecordSet(CNT1, CNT2),"  ",""),",","")%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+						end if
+					case "w/o"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_WorkOrder_Guide(this,'<%=CNT2%>');" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "pno"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Parts_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "mtr"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Material_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "cid"
+						if arrRecordSet(CNT1, CNT2) = "" or isnull(arrRecordSet(CNT1, CNT2)) then
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="checkbox" name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(strID_Pos, CNT2)%>" class=input style="border:0px none #ffffff;"></td>
+<%
+						else
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><%=arrRecordSet(CNT1, CNT2)%></td>
+<%
+						end if
+					case "ptn"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Partner_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "dn1"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_BOM_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "dn2"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_BOMSub_Guide(this);" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;"></td>
+<%
+					case "dt1"
+%>
+			<td title="<%=arrRecordSet(CNT1, CNT2)%>"><input type="text" readonly size=10 name="<%=arrSelect(CNT1)%>" value="<%=arrRecordSet(CNT1, CNT2)%>" class=input style="width:100%;text-align:<%=arrAlign(CNT1)%>;height:<%=strHeight-1%>px;padding-top:<%=nPaddingTop%>px;" onclick="Calendar_D(document.frmCommonList.<%=arrSelect(CNT1)%><%if ubound(arrRecordSet,2) > 1 then%>[<%=CNT2%>]<%end if%>)"></td>
+<%
+					case "slt"
+						arrInputSelectG	= split(replace(arrEdit(CNT1),"slt>",""),";")
+%>
+			<td valign=middle title="<%=arrRecordSet(CNT1, CNT2)%>"><select name="<%=arrSelect(CNT1)%>">
+<%
+						for CNT3 = 0 to ubound(arrInputSelectG)
+							arrInputSelect = split(arrInputSelectG(CNT3),":")
+							if arrInputSelect(0) = "-1" then
+								arrInputSelect(0) = ""
+							elseif isnull(arrInputSelect(0)) then
+								arrInputSelect(0) = ""
+							end if
+	
+							if isnull(arrRecordSet(CNT1, CNT2)) then
+								arrRecordSet(CNT1, CNT2) = ""
+							end if
+%>
+				<option value="<%=arrInputSelect(0)%>"<%if cstr(arrRecordSet(CNT1, CNT2)) = cstr(arrInputSelect(0)) then%> selected<%end if%>><%=arrInputSelect(1)%></option>
+<%
+						next
+%>
+			</select></td>
+<%
+					end select
+	
+				elseif arrDown(CNT1) <> "" then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>" style="padding-top:<%=nPaddingTop-2%>"><a href="/function/ifrm_download2.asp?filepath=<%=arrDown(CNT1)%><%=arrRecordSet(CNT1, CNT2)%>" style='color:blue' target="ifrm_download"><%if arrRecordSet(CNT1, CNT2) <> "" then%> ٿ <%else%><%end if%></a></td>
+<%
+				elseif arrPopup(CNT1) <> "" then
+					if instr(arrPopup(CNT1),"s_BOM_Sub_BS_D_No") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>"><a href="<%=arrPopup(CNT1)%><%=arrRecordSet(CNT1, CNT2)%>" style='color:red' target="_blank"><%=arrRecordSet(CNT1, CNT2)%></a></td>
+<%
+					elseif instr(arrPopup(CNT1),"s_PD_Work_Order") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>"><a href="<%=arrPopup(CNT1)%><%=arrRecordSet(CNT1, CNT2)%>" style='color:red' target="_blank"><%=arrRecordSet(CNT1, CNT2)%></a></td>
+<%
+					elseif instr(arrPopup(CNT1),"s_Material_M_P_No1") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Material_Price_Log_Popup_List(this,'<%=arrRecordSet(CNT1-4, CNT2)%>','');" style='color:green;cursor:hand'><%=arrRecordSet(CNT1, CNT2)%></td>
+<%
+					elseif instr(arrPopup(CNT1),"s_Material_M_P_No2") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Material_Price_Log_Popup_List(this,'<%=arrRecordSet(CNT1-4, CNT2)%>','');" style='color:green;cursor:hand'><%=arrRecordSet(CNT1, CNT2)%></td>
+<%
+					elseif instr(arrPopup(CNT1),"s_Material_M_P_No3") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Material_Qty_Log_Popup_List(this,'<%=arrRecordSet(CNT1, CNT2)%>','');" style='color:green;cursor:hand'><%=arrRecordSet(CNT1, CNT2)%></td>
+<%
+					elseif instr(arrPopup(CNT1),"s_Material_M_P_No4") > 0 then
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>" onclick="javascript:show_Material_Price_Log_Popup_List(this,'<%=arrRecordSet(CNT1, CNT2)%>','');" style='color:green;cursor:hand'><%=arrRecordSet(CNT1, CNT2)%></td>
+<%
+					elseif instr(arrPopup(CNT1),"Bom_Update_Y_DECO") > 0 then
+%>	
+			<td align="<%=arrAlign(CNT1)%>" title="<%=mid(arrRecordSet(CNT1, CNT2),5,10)%>"><textarea rows=1 readonly style="width:<%=strWidth_Cal%>px;height:<%=strHeight-1%>px;overflow:hidden;text-align:<%=arrAlign(CNT1)%>;<%if Request("S_Edit_Mode_YN") = "checked" then%>padding-top:<%=nPaddingTop%>px;<%else%>padding-top:3px;<%end if%>background-color:<%if mid(arrRecordSet(CNT1, CNT2),5,10) = " ش    " then%>green<%elseif mid(arrRecordSet(CNT1, CNT2),5,10) = "    Ϸ " then%>green<%elseif mid(arrRecordSet(CNT1, CNT2),5,10) = "Ȯ  " then%>yellow<%elseif mid(arrRecordSet(CNT1, CNT2),5,10) = "  Ȯ  " then%>red<%else%>transparent<%end if%>"><%if left(arrRecordSet(CNT1, CNT2),4)="0000" then%>&nbsp;<%else%><%=left(arrRecordSet(CNT1, CNT2),4)%><%end if%></textarea></td>
+<%
+					else
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>"><a href="<%=arrPopup(CNT1)%>?<%=strID%>=<%=arrRecordSet(0, CNT2)%>" style='color:blue' target="_blank"><%=arrRecordSet(CNT1, CNT2)%></a></td>
+<%
+					end if
+				else
+%>
+			<td align="<%=arrAlign(CNT1)%>" title="<%=arrRecordSet(CNT1, CNT2)%>"><textarea rows=1 readonly style="width:<%=strWidth_Cal%>px;height:<%=strHeight-1%>px;overflow:hidden;text-align:<%=arrAlign(CNT1)%>;<%if Request("S_Edit_Mode_YN") = "checked" then%>padding-top:<%=nPaddingTop%>px;<%else%>padding-top:3px;<%end if%>background-color:transparent"><%=arrRecordSet(CNT1, CNT2)%></textarea></td>
+<%
+				end if
+			next
+			if arrSelectName(ubound(arrSelectName))=" ۾ " then
+				if instr(lcase(Request.ServerVariables("URL")),"new_bu_list.asp") > 0 then
+					strURL_View = server.urlEncode(URL_View&"?"&strID&"="&arrRecordSet(0, CNT2)&strRequestQueryString)
+%>
+			<td valign=middle>
+				<span style="cursor:hand;color:navy" onclick="javascript:parent.location.href='/index.asp?strURL=<%=strURL_View%>'"><u>    </u></span>
+			</td>
+			
+<%
+				else
+				
+%>			
+			<td valign=middle>
+				<span style="cursor:hand;color:navy" onclick="javascript:location.href='<%=URL_View&"?"&strID&"="&arrRecordSet(0, CNT2)&strRequestQueryString%>'"><u>    </u></span>
+			</td>
+<%
+				end if
+			end if
+			if arrSelectName(ubound(arrSelectName))=" ۾ _      " then
+%>
+			<td valign=middle>
+				<span style="cursor:hand;color:navy" onclick="javascript:parent.location.href='<%=URL_View&"?"&strID&"="&arrRecordSet(0, CNT2)&strRequestQueryString%>'"><u>    </u></span>
+			</td>
+<%
+			end if
+			if arrSelectName(ubound(arrSelectName))=" ۾ _    " then
+%>
+			<td valign=middle>
+				<span style="cursor:hand;color:navy" onclick="javascript:location.href='<%=URL_View&"?"&strID&"="&arrRecordSet(0, CNT2)&strRequestQueryString%>'"><u>    </u></span>
+				&nbsp;
+				<span style="cursor:hand;color:navy" onclick="javascript:Delete_Check2('<%=arrRecordSet(0, CNT2)%>')"><u>    </u></span>
+			</td>
+<%
+			end if
+			if arrSelectName(ubound(arrSelectName))="    " then
+%>
+			<td valign=middle>
+				<span style="cursor:hand;color:navy" onclick="javascript:Delete_Check('<%=arrRecordSet(0, CNT2)%>')"><u>    </u></span>
+			</td>
+<%
+			end if
+%>
+</tr>
+<%
+		next
+	else
+%>
+<tr height=50px>
+	<td colspan=20 align=center bgcolor=white>'  ȸ'  Ǵ  'EXCEL    '    Ŭ   Ͽ   ֽʽÿ .</td>
+</tr>
+<%
+	end if
+%>
+</form>
+<iframe name="ifrm_download" src="about:blank" width=0 height=0 frameborder=0></iframe>
+</table>
+<%
+end sub
+%>
+
+<%
+sub inc_Common_Paging(URL_This, TotalRecordCount, S_PageSize, S_PageNo, strRequestQueryString)
+	dim TotalPageCount
+	dim CNT1
+
+	if int(TotalRecordCount/S_PageSize) = TotalRecordCount/S_PageSize then
+		TotalPageCount = TotalRecordCount/S_PageSize
+	else
+		TotalPageCount = int(TotalRecordCount/S_PageSize) + 1
+	end if
+
+	dim dummy_strRequestQueryString
+	dummy_strRequestQueryString = strRequestQueryString
+
+	dummy_strRequestQueryString = replace(dummy_strRequestQueryString,"S_PageSize=","Dummy_PageSize=")
+	dummy_strRequestQueryString = replace(dummy_strRequestQueryString,"S_PageNo=","Dummy_PageNo=")
+%>
+
+<script language="javascript">
+function PageMovePrev()
+{
+	if(frmPaging.S_PageNo.value != "1")
+	{
+		frmPaging.S_PageNo.value = parseInt(frmPaging.S_PageNo.value) - 1;
+		frmPaging.submit();
+	}
+}
+
+function PageMoveNext()
+{
+	if(frmPaging.S_PageNo.value != "<%=TotalPageCount%>")
+	{
+		frmPaging.S_PageNo.value = parseInt(frmPaging.S_PageNo.value) + 1;
+		frmPaging.submit();
+	}
+}
+</script>
+
+<table width=100% cellpadding=0 cellspacing=0 border=0>
+<form name="frmPaging" action="<%=URL_This%>?dummy=<%=dummy_strRequestQueryString%>" method="post">
+<tr>
+	<td width=130px align=left>
+		<table width=130px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=10px></td>
+			<td width=80px align=right><img src="/img/blank.gif" width=1px height=2px><br>   μ &nbsp;</td>
+			<td align=left>
+				<select name="S_PageSize" onChange="frmPaging.submit();" style="width:40px">
+<%
+	for CNT1 = 10 to 100 step 10
+%>
+					<option value="<%=CNT1%>"<%if CNT1 = int(S_PageSize) then%> selected<%end if%>><%=CNT1%></option>
+<%
+	next
+%>
+<%
+	for CNT1 = 150 to 500 step 50
+%>
+					<option value="<%=CNT1%>"<%if CNT1 = int(S_PageSize) then%> selected<%end if%>><%=CNT1%></option>
+<%
+	next
+%>
+				</select>
+			</td>
+		</tr>
+		</table>
+	</td>
+	<td align=center>
+		<table width=209px cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=70px align=right><img src="/img/blank.gif" width=1px height=2px><br>      &nbsp;</td>
+			<td width=55px align=left>
+				<select name="S_PageNo" onChange="frmPaging.submit();" style="width:42px">
+<%
+	if int(TotalPageCount) = 0 then
+		TotalPageCount = 1
+	end if
+
+	for CNT1 = 1 to TotalPageCount
+%>
+					<option value="<%=CNT1%>"<%if CNT1 = int(S_PageNo) then%> selected<%end if%>><%=CNT1%></option>
+<%
+	next
+%>
+				</select>
+			</td>
+			<td width=15px></td>
+			<td align=right width=12px>
+				<img src="/img/blank.gif" width=1px height=2px><br>
+				<span style="cursor:hand" onclick="javascript:PageMovePrev();"><img src="/img/icoPrevPage.gif"></span>
+			</td>
+			<td width=5px></td>
+			<td align=left width=12px>
+				<img src="/img/blank.gif" width=1px height=2px><br>
+				<span style="cursor:hand" onclick="javascript:PageMoveNext();"><img src="/img/icoNextPage.gif"></span>
+			</td>
+			<td width=40px></td>
+		</tr>
+		</table>
+	</td>
+	<td width=130px align=left>
+		&nbsp;
+	</td>
+</tr>
+</form>
+</table>
+<%
+end sub
+%>
+
+<%
+sub Menu_Left_Show_YN()
+
+	dim Request_Fields
+	dim Menu_Left_Toggle_URL
+
+	Menu_Left_Toggle_URL = Request.ServerVariables("URL")
+%>
+<form name=frmMenu_Left_Toggle action="/menu/Menu_Left_Toggle.asp?Menu_Left_TOGGLE_YN=<%=Request.Cookies("ETC")("Menu_Left_TOGGLE_YN")%>" method="post">
+<input type="hidden" name="Menu_Left_Toggle_URL" value="<%=Menu_Left_Toggle_URL%>">
+<%
+	for each Request_Fields in Request.QueryString
+		if Request_Fields <> "Menu_Left_Toggle_URL" then
+%>
+<input type="hidden" name="<%=Request_Fields%>" value="<%=Request(Request_Fields)%>">
+<%
+		end if
+	next
+	for each Request_Fields in Request.Form
+		if Request_Fields <> "Menu_Left_Toggle_URL" then
+%>
+<input type="hidden" name="<%=Request_Fields%>" value="<%=Request(Request_Fields)%>">
+<%
+		end if
+	next
+%>
+</form>
+<%
+end sub
+%>
+
+<%
+function Make_Path(PathString)
+
+	dim arrPathString
+	dim PathBody
+	dim CNT
+
+	arrPathString = split(PathString,">")
+
+	PathBody = PathBody & "<div class='Path_Area'>" &vbcrlf
+	PathBody = PathBody & "<table width='100%' align=center border=0 cellspacing=0 cellpadding=0>" &vbcrlf
+	PathBody = PathBody & "<tr><td width='100%' align=left>" &vbcrlf
+
+	for CNT = 0 to ubound(arrPathString) - 1
+		PathBody = PathBody & Make_Link(arrPathString(CNT))
+		PathBody = PathBody & "&nbsp;>&nbsp;"
+	next
+
+	PathBody = PathBody & Make_Link(arrPathString(CNT)) &vbcrlf
+
+	PathBody = PathBody & "</td></tr>" &vbcrlf
+	PathBody = PathBody & "</table>" &vbcrlf
+	PathBody = PathBody & "</div>" &vbcrlf
+
+	rem PathBody = PathBody & Make_Title(arrPathString(CNT))
+
+	Make_Path = PathBody
+
+end function
+%>
+
+<%
+function Make_Link(Path_Name)
+
+	dim CNT
+	dim arrPath(50,1)
+	dim Flag
+
+	arrPath(0,0)	= "Home"
+	arrPath(0,1)	= "/"
+	arrPath(1,0)	= "BOM űԵ  "
+	arrPath(1,1)	= "/bom_man/bm_reg_form.asp"
+
+	for CNT = 0 to ubound(arrPath)
+		if trim(Path_Name) = arrPath(CNT,0) then
+			Flag = "Yes"
+			Make_Link = "<a href='"&arrPath(CNT,1)&"'>"&Path_Name&"</a>"
+		end if
+	next
+
+	if Flag <> "Yes" then
+		Make_Link = Path_Name
+	end if
+end function
+%>
+
+<%
+function Make_Title(Title_Name)
+
+	dim strMake_Title
+	dim CNT
+	dim arrTitle(50,2)
+
+	arrTitle(0,0)	= "ȸ          "
+	arrTitle(0,1)	= "          ȸ                         й ȣ         Ͻ      ֽ  ϴ ."
+	arrTitle(0,2)	= "gray"
+
+	arrTitle(1,0)	= "ȸ           Ϸ "
+	arrTitle(1,1)	= ""
+	arrTitle(1,2)	= "gray"
+
+	arrTitle(2,0)	= "ȸ      "
+	arrTitle(2,1)	= "                     ڼ  Ŀ ´ Ƽ!  ǳ븮      Ű    ȯ   մϴ !"
+	arrTitle(2,2)	= "gray"
+
+	arrTitle(3,0)	= "ȸ     ԿϷ "
+	arrTitle(3,1)	= ""
+	arrTitle(3,2)	= "gray"
+
+	arrTitle(4,0)	= "   ̵ /  й ȣã  "
+	arrTitle(4,1)	= "   ̵   Ǵ    й ȣ          ȳ  ô                  ˻       ּ   ."
+	arrTitle(4,2)	= "gray"
+
+	arrTitle(5,0)	= "   ̵ /  й ȣã    "
+	arrTitle(5,1)	= ""
+	arrTitle(5,2)	= "gray"
+
+	arrTitle(6,0)	= "        "
+	arrTitle(6,1)	= " ǳ븮                ̺ Ʈ      Դϴ ."
+	arrTitle(6,2)	= "yellow"
+
+	arrTitle(7,0)	= "      ϱ "
+	arrTitle(7,1)	= " ñ  Ͻ            ֽø  12 ð  ȿ   亯    帮 ڽ  ϴ ."
+	arrTitle(7,2)	= "yellow"
+
+	arrTitle(8,0)	= "       Ű "
+	arrTitle(8,1)	= " ǳ븮    ̿  Ͻø鼭      Ͻ        ˷  ּ   .  ż    ó   ص帮 ڽ  ϴ ."
+	arrTitle(8,2)	= "yellow"
+
+	arrTitle(9,0)	= "   ǻ   "
+	arrTitle(9,1)	= " ǳ븮                    ǰ߿   ͸      ̰   ֽ  ϴ ."
+	arrTitle(9,2)	= "yellow"
+
+	arrTitle(10,0)	= "     ڷ  "
+	arrTitle(10,1)	= "                 ǳ븮 ȸ   Ե    Բ       Ͻ      ִ   Խ     Դϴ ."
+	arrTitle(10,2)	= "yellow"
+
+	for CNT = 0 to ubound(arrTitle)
+		if trim(Title_Name)	= arrTitle(CNT,0) then
+			strMake_Title = strMake_Title & "<div class='Title_Area'>" &vbcrlf
+			strMake_Title = strMake_Title & "<table width='90%' align=center border=0 cellspacing=0 cellpadding=0><tr>" &vbcrlf
+			strMake_Title	= strMake_Title & "<td width=35px align=left><img src='/img/icn_title_"&arrTitle(CNT,2)&".gif'></td>" &vbcrlf
+			strMake_Title	= strMake_Title & "<td align=left valign=bottom>" &vbcrlf
+			strMake_Title	= strMake_Title & "	<span style='font-size:16px;color:#565656'>" &vbcrlf
+			strMake_Title	= strMake_Title & "	<b>"&arrTitle(CNT,0)&"</b>"
+			if arrTitle(CNT,1) <> "" then
+				strMake_Title = strMake_Title & " <b>|</b>" &vbcrlf
+			end if
+			strMake_Title	= strMake_Title & "	</span>" &vbcrlf
+			strMake_Title	= strMake_Title & "	 <span style='font-family:    :font-size:12px;color:#333333'>"&arrTitle(CNT,1)&"</td>" &vbcrlf
+			strMake_Title	= strMake_Title & "</tr></table>" &vbcrlf
+			strMake_Title	= strMake_Title & "</div>" &vbcrlf
+			strMake_Title	= strMake_Title & "<img src='/sys/img/main/blank.gif' width='1' height='20'><br>" &vbcrlf
+			Make_Title		= strMake_Title
+		end if
+	next
+
+end function
+%>
+
+<%
+function Make_BTN(strText,strOnClick,strHREF)
+	dim strMake_BTN
+
+	if len(strText) = 2 then
+		strText = left(strText,1) & " " & right(strText,1)
+	end if
+
+	if strOnClick <> "" then
+		strMake_BTN = strMake_BTN & "<table width=77 height=22 cellpadding=0 cellspacing=0 background='/img/btn_050204.gif' style='cursor:hand;' onclick="""&strOnClick&""">" &vbcrlf
+	elseif strHREF <> "" then
+		strMake_BTN = strMake_BTN & "<table width=77 height=22 cellpadding=0 cellspacing=0 background='/img/btn_050204.gif' style='cursor:hand;' onclick=""javascript:location.href='"&strHREF&"'"">" &vbcrlf
+	end if
+
+	strMake_BTN = strMake_BTN & "<tr>" &vbcrlf
+	strMake_BTN = strMake_BTN & "	<td height=22 align=center style='font-family:    ;font-size:9pt;color:#1B3D8A'><img src='/img/blank.gif' width=1 height=1><br>"&strText&"</td>" &vbcrlf
+	strMake_BTN = strMake_BTN & "</tr>" &vbcrlf
+	strMake_BTN = strMake_BTN & "</table>" &vbcrlf
+
+	Make_BTN = strMake_BTN
+end function
+%>
+
+<%
+function Make_S_BTN(strText,strOnClick,strHREF)
+	dim strMake_S_BTN
+
+	if strOnClick <> "" then
+		strMake_S_BTN = strMake_S_BTN & "<table width=40 height=22 cellpadding=0 cellspacing=0 background='/img/btn_s_050204.gif' style='cursor:hand;' onclick="""&strOnClick&""">" &vbcrlf
+	elseif strHREF <> "" then
+		strMake_S_BTN = strMake_S_BTN & "<table width=40 height=22 cellpadding=0 cellspacing=0 background='/img/btn_s_050204.gif' style='cursor:hand;' onclick=""javascript:location.href='"&strHREF&"'"">" &vbcrlf
+	end if
+
+	strMake_S_BTN = strMake_S_BTN & "<tr>" &vbcrlf
+	strMake_S_BTN = strMake_S_BTN & "	<td height=22 align=center style='font-family:    ;font-size:9pt;color:#1B3D8A'><img src='/img/blank.gif' width=1 height=1><br>"&strText&"</td>" &vbcrlf
+	strMake_S_BTN = strMake_S_BTN & "</tr>" &vbcrlf
+	strMake_S_BTN = strMake_S_BTN & "</table>" &vbcrlf
+
+	Make_S_BTN = strMake_S_BTN
+end function
+%>
+
+<%
+function Make_L_BTN(strText,strOnClick,strHREF)
+	dim strMake_L_BTN
+
+	if strOnClick <> "" then
+		strMake_L_BTN = strMake_L_BTN & "<table width=100 height=22 cellpadding=0 cellspacing=0 background='/img/btn_l_050204.gif' style='cursor:hand;' onclick="""&strOnClick&""">" &vbcrlf
+	elseif strHREF <> "" then
+		strMake_L_BTN = strMake_L_BTN & "<table width=100 height=22 cellpadding=0 cellspacing=0 background='/img/btn_l_050204.gif' style='cursor:hand;' onclick=""javascript:location.href='"&strHREF&"'"">" &vbcrlf
+	end if
+
+	strMake_L_BTN = strMake_L_BTN & "<tr>" &vbcrlf
+	strMake_L_BTN = strMake_L_BTN & "	<td height=22 align=center style='font-family:    ;font-size:9pt;color:#1B3D8A'><img src='/img/blank.gif' width=1 height=1><br>"&strText&"</td>" &vbcrlf
+	strMake_L_BTN = strMake_L_BTN & "</tr>" &vbcrlf
+	strMake_L_BTN = strMake_L_BTN & "</table>" &vbcrlf
+
+	Make_L_BTN = strMake_L_BTN
+end function
+%>
+
+<%
+function Make_Bar(strText,strWidth,strColor)
+	dim strMake_Bar
+	dim Title_BG_Color
+
+	select case strColor
+	case "1"
+		Title_BG_Color = "#eeeeee"
+	case else
+		Title_BG_Color = "#eeeeee"
+	end select
+
+	strMake_Bar = strMake_Bar & "<table width='"&strWidth&"' align=center border=0 cellspacing=0 cellpadding=0 bgcolor='"&Title_BG_Color&"' style='color:#ffffff'>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<tr height=3px>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width=3px><img src='/img/bg_top_left_white_round.gif'></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width='100%'><img src='/img/blank.gif' height=3 width=1></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width=3px><img src='/img/bg_top_right_white_round.gif'></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "</tr>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<tr height=22><td colspan=3 align=left><img src='/img/blank.gif' width=15 height=1>"&strText&"</td></tr>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<tr height=3px>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width=3px><img src='/img/bg_bottom_left_white_round.gif'></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width='100%'><img src='/img/blank.gif' height=3 width=1></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<td width=3px><img src='/img/bg_bottom_right_white_round.gif'></td>" &vbcrlf
+	strMake_Bar = strMake_Bar & "</tr>" &vbcrlf
+	strMake_Bar = strMake_Bar & "</table>" &vbcrlf
+	strMake_Bar = strMake_Bar & "<img src='/img/blank.gif' width=1 height=1><br>" &vbcrlf
+
+	Make_Bar = strMake_Bar
+end function
+%>
+
+<%
+function Make_SQL(arrPMT, arrSQL, SQL)
+
+	dim WFlag
+	dim Counter
+	dim Search_Counter
+
+	WFlag = 0
+
+	for Counter = 0 to UBound(arrPMT)
+		if trim(arrPMT(Counter)) <> "" then
+
+			if WFlag = 0 then
+				if instr(lcase(SQL),"group by") > 0 then
+					SQL = SQL & " Having "
+				else
+					SQL = SQL & " Where "
+				end if
+				WFlag = 1
+			end if
+
+			if left(arrPMT(Counter),1)="%" and right(arrPMT(Counter),1)="%" then
+				arrSQL(Counter) = replace(arrSQL(Counter),"=","like")
+			end if
+
+			SQL = SQL & arrSQL(Counter)
+
+			for Search_Counter = Counter + 1 to UBound(arrPMT)
+
+				if trim(arrPMT(Search_Counter)) <> ""  then
+					SQL = SQL & " and "
+					Exit For
+				end if
+
+			next
+
+		end if
+	next
+
+	Make_SQL = SQL
+
+end function
+%>
+
+<%
+function CustomFormatCurrency(Num)
+	dim Price
+	dim arrNum
+	dim Float_YN
+
+	if instr(Num,".") then
+		Float_YN = "Y"
+		arrNum = split(Num,".")
+		Num = arrNum(0)
+
+		if left(arrNum(1),1) >= 5 then
+			Num = Num + 1
+		end if
+	end if
+
+	if isNumeric(Num) then
+		if len(Num) = 4 then '6,000
+			Price=left(Num,1)&","&right(Num,3)
+		elseif len(Num) = 5 then '60,000
+			Price=left(Num,2)&","&right(Num,3)
+		elseif len(Num) = 6 then '600,000
+			Price=left(Num,3)&","&right(Num,3)
+		elseif len(Num) = 7 then '6,000,000
+			Price=left(Num,1)&","&mid(Num,2,3)&","&right(Num,3)
+		elseif len(Num) = 8 then '60,000,000
+			Price=left(Num,2)&","&mid(Num,3,3)&","&right(Num,3)
+		elseif len(Num) = 9 then '600,000,000
+			Price=left(Num,3)&","&mid(Num,4,3)&","&right(Num,3)
+		elseif len(Num) = 10 then '6,000,000,000
+			Price=left(Num,1)&","&mid(Num,2,3)&","&mid(Num,5,3)&","&right(Num,3)
+		elseif len(Num) = 11 then '60,000,000,000
+			Price=left(Num,2)&","&mid(Num,3,3)&","&mid(Num,6,3)&","&right(Num,3)
+		elseif len(Num) = 12 then '600,000,000,000
+			Price=left(Num,3)&","&mid(Num,4,3)&","&mid(Num,7,3)&","&right(Num,3)
+		else
+			Price = Num
+		end if
+	else
+		Price = Num
+	end if
+
+	'if Float_YN = "Y" then
+		'Price = Price & "." & arrNum(1)
+	'end if
+
+	if trim(Price) = "" or isnull(Price) then
+		Price = "0"
+	end if
+
+	CustomFormatCurrency = Price & "  "
+end function
+%>
+
+<%
+function CustomFormatComma(Num)
+	dim Price
+	dim arrNum
+	dim Float_YN
+
+	if instr(Num,".") then
+		Float_YN = "Y"
+		arrNum = split(Num,".")
+		Num = arrNum(0)
+
+		if left(arrNum(1),1) >= 5 then
+			Num = Num + 1
+		end if
+	end if
+
+	if isNumeric(Num) then
+		if len(Num) = 4 then '6,000
+			Price=left(Num,1)&","&right(Num,3)
+		elseif len(Num) = 5 then '60,000
+			Price=left(Num,2)&","&right(Num,3)
+		elseif len(Num) = 6 then '600,000
+			Price=left(Num,3)&","&right(Num,3)
+		elseif len(Num) = 7 then '6,000,000
+			Price=left(Num,1)&","&mid(Num,2,3)&","&right(Num,3)
+		elseif len(Num) = 8 then '60,000,000
+			Price=left(Num,2)&","&mid(Num,3,3)&","&right(Num,3)
+		elseif len(Num) = 9 then '600,000,000
+			Price=left(Num,3)&","&mid(Num,4,3)&","&right(Num,3)
+		elseif len(Num) = 10 then '6,000,000,000
+			Price=left(Num,1)&","&mid(Num,2,3)&","&mid(Num,5,3)&","&right(Num,3)
+		elseif len(Num) = 11 then '60,000,000,000
+			Price=left(Num,2)&","&mid(Num,3,3)&","&mid(Num,6,3)&","&right(Num,3)
+		elseif len(Num) = 12 then '600,000,000,000
+			Price=left(Num,3)&","&mid(Num,4,3)&","&mid(Num,7,3)&","&right(Num,3)
+		else
+			Price = Num
+		end if
+	else
+		Price = Num
+	end if
+
+	'if Float_YN = "Y" then
+		'Price = Price & "." & arrNum(1)
+	'end if
+
+	if trim(Price) = "" or isnull(Price) then
+		Price = "0"
+	end if
+
+	CustomFormatComma = Price
+end function
+%>
+
+<%
+sub Make_Search_Bar(strColumn, strName, strType, URL_This, strRequestQueryString)
+	dim CNT1
+	dim CNT2
+	dim CNT3
+
+	dim strCheck
+
+	dim arrNameG
+	dim arrCulumnG
+	dim arrTypeG
+	dim arrName
+	dim arrCulumn
+	dim arrType
+
+	dim arrSelectG
+	dim arrSelect
+	dim arrDateTimeG
+	dim arrDateTime
+
+	dim strRequestedValue
+	dim strRequestedValue_1
+	dim strRequestedValue_2
+	
+	dim SQL
+	dim RS1
+	
+	set RS1 = Server.CreateObject("ADODB.RecordSet")
+	arrNameG	= split(strName,"|/|")
+	arrCulumnG	= split(strColumn,"|/|")
+	arrTypeG	= split(strType,"|/|")
+%>
+
+<div style="width:100%">
+<center>
+<table border=0 cellspacing=0 cellpadding=5 style="border:1px solid #999999;" bgcolor="#ffffff"> <!--background="/img/bg_search_bar.jpg">-->
+<form name="frmSearch_Bar" action="<%=URL_This%>" method="post">
+<input type="hidden" name="s_callby" value="<%=Request("s_callby")%>">
+<tr>
+	<td width=10px>&nbsp;</td>
+	<td align="center">
+		<table border=0 cellspacing=0 cellpadding=0>
+<%
+	for CNT1 = 0 to ubound(arrNameG)
+%>
+		<tr height=22px>
+<%
+	arrName		= split(arrNameG(CNT1),",")
+	arrCulumn	= split(arrCulumnG(CNT1),",")
+	arrType		= split(arrTypeG(CNT1),",")
+
+		for CNT2 = 0 to ubound(arrName)
+			strRequestedValue = Request(arrCulumn(CNT2))
+%>
+			<td align=right><%=arrName(CNT2)%>&nbsp;:&nbsp;</td>
+			<td align=left>
+<%
+			select case left(arrType(CNT2),3)
+			case "txt"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "w/o"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onclick="javascript:show_WorkOrder_Guide(this,'frmSearch_Bar',0);">
+<%
+			case "dn1"
+				if instr(lcase(Request.ServerVariables("HTTP_URL")),"bu_list") > 0 then
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onDblclick="javascript:show_BOM_Guide(this,'frmSearch_Bar',0);">
+<%
+				else
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onclick="javascript:show_BOM_Guide(this,'frmSearch_Bar',0);">
+<%
+				end if
+			case "dn2"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onclick="javascript:show_BOMSub_Guide(this,'frmSearch_Bar',0);">
+<%
+			case "pno"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onclick="javascript:show_Parts_Guide(this,'frmSearch_Bar',0);">
+<%
+			case "mtr"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onDblclick="javascript:show_Material_Guide(this,'frmSearch_Bar',0);";">
+<%
+			case "ptn"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()" onDblclick="javascript:show_Partner_Guide(this,'frmSearch_Bar',0);";">
+<%
+			case "num"
+				strCheck = strCheck & "if(frmSearch_Bar."&arrCulumn(CNT2)&".value && !IsNum(frmSearch_Bar."&arrCulumn(CNT2)&".value))" &vbcrlf
+				strCheck = strCheck & "{" &vbcrlf
+				strCheck = strCheck & "		alert('"&arrName(CNT2)&" ׸񿡴     ڸ   Է    ּ   .')" &vbcrlf
+				strCheck = strCheck & "		frmSearch_Bar."&arrCulumn(CNT2)&".value='';" &vbcrlf
+				strCheck = strCheck & "		return false;" &vbcrlf
+				strCheck = strCheck & "}" &vbcrlf
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input size=14 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "slt"
+				arrSelectG	= split(replace(arrType(CNT2),"slt>",""),";")
+%>
+				<select name="<%=arrCulumn(CNT2)%>" onkeydown="javascript:Search_Bar_Enter_Check()">
+				<option value="">-  ü-</option>
+<%
+				for CNT3 = 0 to ubound(arrSelectG)
+					arrSelect = split(arrSelectG(CNT3),":")
+%>
+				<option value="<%=arrSelect(0)%>"<%if cstr(strRequestedValue) = cstr(arrSelect(0)) then%> selected<%end if%>><%=arrSelect(1)%></option>
+<%
+				next
+%>
+				</select>
+<%
+			case "mid"
+				SQL = "select M_ID, M_Name, M_Part from tbMember where (M_Retire_Date is null or M_Retire_Date = '') and M_Use_YN = 'Y' "
+				RS1.Open SQL,sys_DBCon
+%>
+				<select name="<%=arrCulumn(CNT2)%>" onkeydown="javascript:Search_Bar_Enter_Check()">
+				<option value="">-  ü-</option>
+<%
+				do until RS1.Eof
+					if instr(arrType(CNT2),"-"&RS1("M_Part")&"-") > 0 then
+%>
+				<option value="<%=RS1("M_ID")%>"<%if cstr(strRequestedValue) = cstr(RS1("M_ID")) then%> selected<%end if%>><%=RS1("M_Name")%>(<%=RS1("M_ID")%>)</option>
+<%
+					end if
+					RS1.MoveNext
+				loop
+				RS1.Close
+%>
+				</select>
+<%
+			case "mnm"
+				SQL = "select M_ID, M_Name, M_Part from tbMember where (M_Retire_Date is null or M_Retire_Date = '') and M_Use_YN = 'Y' "
+				RS1.Open SQL,sys_DBCon
+%>
+				<select name="<%=arrCulumn(CNT2)%>" onkeydown="javascript:Search_Bar_Enter_Check()">
+				<option value="">-  ü-</option>
+<%
+				do until RS1.Eof
+					if instr(arrType(CNT2),"-"&RS1("M_Part")&"-") > 0 then
+%>
+				<option value="<%=RS1("M_Name")%>"<%if cstr(strRequestedValue) = cstr(RS1("M_Name")) then%> selected<%end if%>><%=RS1("M_Name")%>(<%=RS1("M_ID")%>)</option>
+<%
+					end if
+					RS1.MoveNext
+				loop
+				RS1.Close
+%>
+				</select>
+<%
+			case "cnt"
+
+%>
+				<select name="<%=arrCulumn(CNT2)%>" onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+				for CNT3 = 1 to 300
+%>
+				<option value="<%=CNT3%>"<%if cstr(strRequestedValue) = cstr(CNT3) then%> selected<%end if%>><%=CNT3%></option>
+<%
+				next
+%>
+				</select>
+<%
+			case "dt1"
+				if strRequestedValue = "" then
+					strRequestedValue = right(arrType(CNT2),len(arrType(CNT2))-3)
+				end if
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input onclick="Calendar_D(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>)" size=10 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "dt2"
+				if len(strRequestedValue) = 22 then
+					strRequestedValue_1 = left(strRequestedValue,10)
+					strRequestedValue_2 = right(strRequestedValue,10)
+				else
+					strRequestedValue_1 = ""
+					strRequestedValue_2 = ""
+				end if
+
+				if strRequestedValue = "" then
+					strRequestedValue_1 = right(arrType(CNT2),len(arrType(CNT2))-3)
+					strRequestedValue_2 = strRequestedValue_1
+				end if
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue_1%>" class=input onclick="Calendar_D(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>[0])" size=10 onkeydown="javascript:Search_Bar_Enter_Check()">
+				-
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue_2%>" class=input onclick="Calendar_D(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>[1])" size=10 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "mt1"
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue%>" class=input readonly onclick="Calendar_M(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>)" size=7 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "mt2"
+				if len(strRequestedValue) = 16 then
+					strRequestedValue_1 = left(strRequestedValue,7)
+					strRequestedValue_2 = right(strRequestedValue,7)
+				else
+					strRequestedValue_1 = ""
+					strRequestedValue_2 = ""
+				end if
+%>
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue_1%>" class=input onclick="Calendar_M(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>[0])" size=7 onkeydown="javascript:Search_Bar_Enter_Check()">
+				-
+				<input type="text" name="<%=arrCulumn(CNT2)%>" value="<%=strRequestedValue_2%>" class=input onclick="Calendar_M(document.frmSearch_Bar.<%=arrCulumn(CNT2)%>[1])" size=7 onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+			case "chk"
+				if arrCulumn(CNT2) = "s_edit_mode_yn" then
+%>
+				<input type="checkbox" name="<%=arrCulumn(CNT2)%>" value="checked"<%if strRequestedValue <> "" then%> checked<%end if%> onclick="javascript:Search_Bar_Submit_Check()">
+<%
+				else
+%>
+				<input type="checkbox" name="<%=arrCulumn(CNT2)%>" value="checked"<%if strRequestedValue <> "" then%> checked<%end if%> onkeydown="javascript:Search_Bar_Enter_Check()">
+<%
+				end if
+			end select
+%>
+			</td>
+<%
+			if CNT2 < ubound(arrName) then
+%>
+			<td width=20px><img src="/img/blank.gif"></td>
+<%
+			end if
+		next
+%>
+			</td>
+		</tr>
+<%
+	next
+%>
+		</table>
+		<img src="/img/blank.gif" width=1px height=4px><br>
+		<table border=0 cellspacing=0 cellpadding=0 width=159px style=table-layout:fixed>
+		<tr>
+			<td width=77px><%=Make_BTN("  ȸ","javascript:Search_Bar_Submit_Check();","")%></td>
+			<td width=5px></td>
+			<td width=77px><%=Make_BTN("   ǻ   ","javascript:frmFiltering_Stop_Submit_Check();","")%></td>
+		</tr>
+		</table>
+	</td>
+	<td width=10px>&nbsp;</td>
+</tr>
+</form>
+<form name="frmFiltering_Stop" action="<%=URL_This%>" method="post">
+<input type="hidden" name="s_callby" value="<%=Request("s_callby")%>">
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"process_record") > 0 or instr(lcase(Request.ServerVariables("HTTP_URL")),"process_report") > 0 then
+%>
+<input type="hidden" name="s_pr_process" value="<%=Request("s_pr_process")%>">
+<%
+end if
+%>
+<%
+if instr(lcase(Request.ServerVariables("HTTP_URL")),"mo_list") > 0 then
+%>
+<input type="hidden" name="s_edit_mode_yn" value="<%=Request("s_edit_mode_yn")%>">
+<%
+end if
+%>
+</form>
+</table>
+</center>
+</div>
+<img src="/img/blank.gif" width=1px height=10px><br>
+
+<script language="javascript">
+function Search_Bar_Enter_Check()
+{
+	if(event.keyCode == 13)
+	{
+		Search_Bar_Submit_Check();
+	}
+}
+
+function Search_Bar_Submit_Check()
+{
+
+<%
+response.write strCheck
+%>
+	Show_Progress();
+	frmSearch_Bar.submit();
+}
+
+function frmFiltering_Stop_Submit_Check()
+{
+	Show_Progress();
+	frmFiltering_Stop.submit();
+}
+</script>
+
+<%
+	set RS1 = nothing
+end sub
+%>
+
+<%
+Function nLeft(str,strcut)
+  dim bytesize
+  dim nLeft_count
+  
+  bytesize = 0
+  For nLeft_count = 1 to len(str)
+       If asc(mid(str,nLeft_count,1)) > 0 Then ' ѱ۰    0      ۴ 
+                 bytesize = bytesize + 1 ' ѱ     ƴѰ   1Byte
+       Else
+                 bytesize = bytesize + 2 ' ѱ        2Byte
+       End If
+      If CInt(strcut) >= CInt(bytesize) Then
+                  nLeft = nLeft & mid(str,nLeft_count,1)   
+      End If
+
+  Next
+  If len(str) > len(nLeft) Then
+        nLeft=left(nLeft,len(nLeft)) &""
+  End if
+End Function
+%>
+
+<%
+function getDATE_HHMMSS()
+	dim hh
+	dim nn
+	dim ss
+	dim strNow
+	strNow = now()
+	hh = Right("00" & Hour(strNow), 2)
+	nn = Right("00" & Minute(strNow), 2)
+	ss = Right("00" & Second(strNow), 2)
+	
+	getDATE_HHMMSS = date()&" "&hh&":"&nn&":"&ss
+end function
+%>
+

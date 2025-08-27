@@ -1,0 +1,758 @@
+<meta http-equiv=Content-type content="text/html; charset=euc-kr">
+<meta http-equiv=Cache-Control content=No-Cache><meta http-equiv=Pragma content=No-Cache>
+<style>
+BODY,TABLE,TR,TD {font-size:12px;}
+select{behavior: url('./selectbox.htc');}
+TD{line-height:150%;}
+</style>
+<body leftmargin="0" rightmargin="0" bgcolor="" onLoad="document.getElementById('selectbox_focus').focus()">
+<center>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td width="632"><b>* 스크립트 목적 </b><br>
+&nbsp; - 기존의 셀렉트박스를 스타일의 적용이 가능한 레이어 형태(실제로는 테이블과 Popup Object)로 자동 변환<br>
+<br>
+<b>* 주요 기능 및 특징</b><br>
+&nbsp; - 기존 셀렉트박스 태그의 수정 없이 스타일 시트에 정의하는 것만으로 모든 셀렉트박스 변환 가능<br> 
+&nbsp; - 셀렉트박스를 기준으로 아래위의 여백을 비교하여 옵션 항목 창의 출력 방향 결정<br>
+&nbsp; - 기존 셀렉트박스처럼 변환된 셀렉트박스도 포커스를 가질 수 있음<br>
+&nbsp;&nbsp;&nbsp; &ltscript&gtdocument.getElementById('SelectBox_Name').focus();&lt/script&gt<br>
+&nbsp; - 변환된 셀렉트박스가 포커스를 가지고 있을 경우 휠을 움직이거나 키보드의 Home, End, Page Up, Page Down,<br>
+&nbsp;&nbsp;&nbsp; Up Arrow, Down Arrow 등을 누름에 따라 값의 변경이 가능<br> 
+&nbsp;&nbsp;&nbsp; 또한 열려진 옵션 항목 창에서도 가능함 <br>
+&nbsp; - 위의 이벤트 시에 문서의 스크롤을 제어하여 문서의 움직임이 없음<br>
+&nbsp; - 아이프레임 및 프레임에 삽입된 상황에서도 프레임에 영향을 받지 않고 정상적으로 출력<br>
+&nbsp;&nbsp;&nbsp; (Layer가 아닌 Popup Object를 이용) <br>
+&nbsp; - 셀렉트박스의 항목이 동적으로 변경할 경우를 위한 메소드 제공 <br>
+&nbsp;&nbsp;&nbsp; &ltscript&gtdocument.getElementById("SelectBox_Name").reInitializeSelectBox();&lt/script&gt<br>
+&nbsp; - 옵션 항목 창에 출력될 항목의 갯수를 지정(setDisplayCount() 메소드 이용)할 수 있으며 항목이 출력될<br>
+&nbsp;&nbsp;&nbsp; 갯수보다 많을 경우 자동으로 스크롤바 생성 (기본값은 10)<br>
+&nbsp; - 셀렉트박스 및 옵션 항목에 대해 툴팁 메세지 설정 가능 <br>
+&nbsp; - 특정 셀렉트박스의 색상 및 화살표 이미지 변경 가능<br>
+&nbsp; - 변환된 레이어를 텍스트처럼 취급 (연속적인 출력이 가능, 하단 여백 없음)<br>
+&nbsp; - HTC  가 지원되는 브라우져에서만 변환 (HTC는 5.0 이상에서 가능하나 createPopup() 메소드가 5.5부터<br>
+&nbsp;&nbsp;&nbsp; 지원되어 IE 5.5 이상에서만 변환) <br>
+&nbsp; - 옵션 항목 창 출력시 일시적으로 문서가 길어져 스크롤바가 출력되는 일이 없음 <br>
+      </p>
+    </td>
+  </tr>
+</table>
+<br>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td width="632"><p><b>* 사용 방법</b><br>
+        &nbsp; - 스타일시트에 미리 정의하는 방법<br>
+&nbsp; &lt;style&gt;select{ behavior: url('./selectBox.htc');}&lt;style&gt;<br>
+        &nbsp; - 특정 SelectBox 폼필드에만 적용하는 방법<br>
+&nbsp; &lt;select style=&quot;behavior: url('./selectBox.htc');&quot;&gt;&lt;/select&gt;<br>
+    </p></td>
+  </tr>
+</table>
+<br>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* 셀렉트박스 포커스 처리</b><br>
+      &nbsp; - 일반적인 SelectBox와 동일하게 처리 -> &ltscript&gt document.getElementById('selectbox').focus();&lt/script&gt<br>
+	  &nbsp; - 셀렉트박스가 포커스를 가진 상황에서 휠을 움직이거나 Home, End, Page Up, Page Down,<br>
+	  &nbsp;&nbsp;&nbsp; Up Arrow, Down Arrow 등의 키를 누르면 포커스를 가진 셀렉트박스의 값을 변경 함<br>
+	  &nbsp; - 동적 처리 -> <input type="button" onClick="document.getElementById('selectbox_focus').focus()" value="focus()">
+	  <input type="button" onClick="document.getElementById('selectbox_focus').blur()" value="blur()">
+	  </p></td>
+  </tr>
+  <tr align="left">
+    <td width="445">&ltbody onLoad="document.getElementById('selectbox_focus').focus();"&gt</td>
+    <td width="187"><select name="selectbox_focus">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<script language="">
+function addItem(selected_index){
+  var objSB = document.getElementById("selectbox_dc_1");
+  for(i=0; i<10; i++){
+    objNewOption = new Option();
+    objNewOption.text = "추가된 "+i+"번째 항목";
+    objSB.add(objNewOption,objSB.length);
+  }
+  if(selected_index) objSB.selectedIndex = selected_index;
+  objSB.reInitializeSelectBox();
+} 
+function changeItem(selected_index){
+  var objSB = document.getElementById("selectbox_dc_2");
+
+  for(i=0; i<10; i++){
+    objSB.options[i] = new Option("교체된 "+i+"번째 항목",i); 
+  }
+  if(selected_index) objSB.selectedIndex = selected_index;
+  objSB.reInitializeSelectBox();
+} 
+</script> 
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="3"><p><b>* 셀렉트박스 동적 변경 처리</b><br>
+		&nbsp; - 셀렉트박스의 항목을 동적으로 변경할 경우 reInitializeSelectBox() 메소드를 이용하여 재변환 가능<br>
+		&nbsp; - 셀렉트박스의 항목을 동적으로 추가 및 삭제할 경우 변환된 셀렉트박스를 제거 후 다시 변환함<br>
+		&nbsp;&nbsp;&nbsp; &ltscript&gtdocument.getElementById("SelectBox_Name").reInitializeSelectBox();&lt/script&gt<br>
+	  </p></td>
+  </tr>
+  <tr align="left">
+    <td width="134"><p>
+      <input type="button" name="Submit4" value="addItem()" onClick="addItem()">
+</p>
+      <p>      
+         <input type="button" name="Submit42" value="addItem(20)" onClick="addItem(20)";>
+      </p></td>
+    <td width="350"><p>&lt;script&gt;<br>
+function addItem(selected_index){<br>
+&nbsp; var objSB = document.getElementById(&quot;selectbox_dc_1&quot;);<br>
+&nbsp; for(i=0; i&lt;10; i++){<br>
+&nbsp;&nbsp;&nbsp; objNewOption = new Option();<br>
+&nbsp;&nbsp;&nbsp; objNewOption.text = &quot;추가된 &quot;+i+&quot;번째 항목&quot;;<br>
+&nbsp;&nbsp;&nbsp; objSB.add(objNewOption,objSB.length);<br>
+&nbsp; }<br>
+&nbsp; if(selected_index) objSB.selectedIndex = selected_index;<br>
+&nbsp; <b>objSB.reInitializeSelectBox();</b><br>
+  } <br>
+&lt;/script&gt; </p>    </td>
+    <td width="140"><select name="selectbox_dc_1">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td><p>
+      <input type="button" name="Submit3" value="changeItem()" onClick="changeItem()">
+    </p>
+    <p>
+      <input type="button" name="Submit32" value="changeItem(10)" onClick="changeItem(10
+	  )">  
+        </p></td>
+    <td>&lt;script&gt;<br>
+function changeItem(selected_index){<br>
+&nbsp; var objSB = document.getElementById(&quot;selectbox_dc_2&quot;);<br>
+&nbsp; for(i=0; i&lt;10; i++){<br>
+&nbsp;&nbsp;&nbsp; objSB.add = new Option(&quot;변경된 &quot;+i+&quot;번째 항목&quot;,i); <br>
+&nbsp; }<br>
+&nbsp; if(selected_index) objSB.selectedIndex = selected_index;<br>
+&nbsp; <b>objSB.reInitializeSelectBox();</b><br>
+} <br>
+&lt;/script&gt; </td>
+    <td><select name="selectbox_dc_2" id="selectbox_dc_2">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><b>* 색상 및 화살표 이미지 설정 </b><br>
+      &nbsp; setColor=&quot;일반폰트색상,일반배경색상,롤오버폰트색상,롤오버배경색상,일반보더색상,롤오버보더색상&quot;<br>
+      &nbsp; setImage=&quot;./arrow_image.gif&quot; (14*16 이하 사이즈)</td>
+  </tr>
+  <tr align="left">
+    <td scope="row">&lt;select&gt; (기본형) </td>
+    <td><select name="test1">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td width="424"> &lt;select setColor=&quot;#000000,#FFFFFF,#000000,#E6E4E4,#C0C0C0,#000000&quot;&gt;</td>
+    <td width="208"><select name="test2" setColor="#000000,#FFFFFF,#000000,#E6E4E4,#C0C0C0,#000000">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td width="424"> &lt;select setColor=&quot;white,red,black,white,blue,yellow&quot;&gt;</td>
+    <td width="208"><select name="test3" setColor="white,red,black,white,blue,yellow">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> &lt;select setImage=&quot;./arrow_image2.gif&quot;&gt;</td>
+    <td><select name="test4" setImage="./arrow_image2.gif">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> setColor와 setImage 동시 적용 </td>
+    <td><select name="test5" setColor="#000000,#FFFFFF,#000000,#E6E4E4,#C0C0C0,#000000" setImage="./arrow_image2.gif">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* 툴팁 메세지 설정</b><br>
+      &nbsp; - 셀렉트박스 및 옵션 항목에 툴팁 메세지를 설정하는 것이 가능 함<br>
+	  &nbsp; - 셀렉트박스 태그 및 옵션 항목 태그에 tooltip="툴팁 메세지" 와 같이 프로퍼티 추가<br>
+	  </p></td>
+  </tr>
+  <tr align="left">
+    <td width="445">
+	  &nbsp;&nbsp;&nbsp; &ltselect name='selectbox_tooltip' tooltip='필수 항목이니 꼭 선택하세요'&gt<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp; &ltoption value='1' tooltip='첫번째 항목'&gt1번 항목&lt/option&gt<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp; &ltoption value='2' tooltip='두번째 항목'&gt2번 항목&lt/option&gt<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp; &ltoption value='3' tooltip='세번째 항목'&gt3번 항목&lt/option&gt<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp; &ltoption value='4' tooltip='네번째 항목'&gt4번 항목&lt/option&gt<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp; &ltoption value='5' tooltip='다섯번째 항목'&gt5번 항목&lt/option&gt<br>
+	  &nbsp;&nbsp;&nbsp; &lt/select&gt
+	</td>
+    <td width="187"><select name="selectbox_tooltip" tooltip='필수 항목이니 꼭 선택하세요'>
+      <option value="1" tooltip='첫번째 항목'>1번 항목</option>
+      <option value="2" tooltip='두번째 항목'>2번 항목</option>
+      <option value="3" tooltip='세번째 항목'>3번 항목</option>
+      <option value="4" tooltip='네번째 항목'>4번 항목</option>
+      <option value="5" tooltip='다섯번째 항목'>5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* 최대 출력 갯수 설정</b><br>
+      &nbsp; - 옵션 항목 창에 출력될 항목의 갯수를 설정 가능<br>
+	  &nbsp; - setDisplayCount="출력될 갯수" 를 이용하여 설정<br>
+	  </p></td>
+  </tr>
+  <tr align="left">
+    <td width="445">&ltselect name="selectbox_count_1" setDisplayCount="5"&gt</td>
+    <td width="187"><select name="selectbox_count_1" setDisplayCount="5">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td width="445">&ltselect name="selectbox_count_2" setDisplayCount="10"&gt</td>
+    <td width="187"><select name="selectbox_count_2" setDisplayCount="10">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td width="445">&ltselect name="selectbox_count_3" setDisplayCount="15"&gt</td>
+    <td width="187"><select name="selectbox_count_3" setDisplayCount="15">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* SelectBox의 넓이 설정</b><br>
+      &nbsp; - style=&quot;width:200px&quot; 와 같이 설정 가능 <br>
+      &nbsp; - 별도의 넓이 설정이 없을 경우에는 변환 전의 셀렉트박스의 넓이 값(this.style.offsetWidth)으로 설정 함<br>
+	  &nbsp;&nbsp;&nbsp; (offsetWidth 값을 못 읽을 경우 이전 버전에서 사용하던 문자열의 넓이를 픽셀로 구하는 함수 이용) <br>
+    </p>
+    </td>
+  </tr>
+  <tr align="left">
+    <td width="300"> &lt;select style=&quot;width:200px&quot; &gt;</td>
+    <td width="332"><select name="test6" style="width:200px;">
+      <option>스타일을 200px로 설정함</option>
+      <option>스타일을 200px로 설정함</option>
+      <option>스타일을 200px로 설정함</option>
+      <option>스타일을 200px로 설정함</option>
+        </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 자동 설정 ( 옵션 내용이 한글만 ) </td>
+    <td><select name="test7">
+      <option>옵션 텍스트가 한글만 있을 경우</option>
+      <option>옵션 텍스트가 한글만 있을 경우</option>
+      <option>옵션 텍스트가 한글만 있을 경우</option>
+      <option>옵션 텍스트가 한글만 있을 경우</option>
+        </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 자동 설정 ( 옵션 내용이 영문만 ) </td>
+    <td><select name="test8">
+      <option>This option text is english...</option>
+      <option>This option text is english...</option>
+      <option>This option text is english...</option>
+      <option>This option text is english...</option>
+        </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 자동 설정 ( 옵션 내용이 한글 + 영문 + 숫자 ) </td>
+    <td><select name="test9">
+      <option>한글 + English + 1234567890</option>
+      <option>한글 + English + 1234567890</option>
+      <option>한글 + English + 1234567890</option>
+      <option>한글 + English + 1234567890</option>
+
+    </select></td>
+  </tr>
+</table>
+<br>
+
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* 테이블 안에서의 정렬 </b><br>
+      &nbsp; - 테이블 안에서 셀의 정렬에 따라 자동 적용 </p></td>
+  </tr>
+  <tr align="left">
+    <td width="300"> 왼쪽 정렬 </td>
+    <td width="332"><select name="test10">
+      <option value="">왼쪽 정렬</option>
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 중앙 정렬 </td>
+    <td align="center"><select name="test11">
+      <option value="">중앙 정렬</option>
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 오른쪽 정렬 </td>
+    <td align="right"><select name="test12">
+      <option value="">오른쪽 정렬</option>
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+</table>
+<br>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* onChange 이벤트 처리</b><br>
+      &nbsp; - 일반적인 SelectBox와 동일하게 처리 </p></td>
+  </tr>
+  <tr align="left">
+    <td width="445"> &lt;select onChange=&quot;alert('선택값 : '+this.options[this.selectedIndex].value)&quot;&gt;</td>
+    <td width="187"><select name="test13" onChange="alert('선택값: '+this.options[this.selectedIndex].value)">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> &lt;select onChange=&quot;location.href=this.options[this.selectedIndex].value;&quot;&gt;</td>
+    <td><select  name="test14" onChange="location.href=this.options[this.selectedIndex].value;">
+      <option value="">:: 검색 사이트로 이동 ::</option>
+      <option value="http://www.naver.com">네이버</option>
+      <option value="http://www.empas.com">엠파스</option>
+      <option value="http://www.yahoo.co.kr">야후</option>
+      <option value="http://www.mym.com">MyM</option>
+      <option value="http://www.daum.net">다음</option>
+
+    </select></td>
+  </tr>
+</table>
+<br>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td colspan="2"><p><b>* 스크롤바 및 레이어 위치 테스트</b><br>
+&nbsp; - 셀렉트박스의 문서에서의 위치에 따라 옵션 항목 창을 위로 보여주거나 아래로 보여줌.<br>
+&nbsp; - 또한 한쪽으로 모두 못 보여줄 경우에는 자동으로 스크롤바가 생성됨.<br>
+&nbsp; - 기본적으로는 셀렉트박스를 기준으로 아래위의 공간을 비교하여 더 넓은 공간쪽으로 옵션 항목 창이 출력되나<br>  
+&nbsp;&nbsp;&nbsp; 공간이 10개 항목이 나올 정도의 높이(204px)가 되면 아래로 나옴<br>
+&nbsp; - 단, 하단 여백이 204px보다 적을 경우에도 하던 여백과 항목의 갯수에 비례해 공간이 될 경우에는 아래로 출력됨<br>
+&nbsp; - 문서를 스크롤하여 아래의 셀렉트박스를 기준으로 아래위의 공간을 조절한 후 셀렉트박스를 클릭하면 알 수 있음</p>
+    </td>
+  </tr>
+  <tr align="left">
+    <td width="424"> 테스트용 1 (항목이 2개) </td>
+    <td width="208"><select name="test15">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 테스트용 2 (항목이 5개) </td>
+    <td><select name="test16">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 테스트용 3 (항목이 10개) </td>
+    <td><select name="test17">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 테스트용 4 (항목이 15개)</td>
+    <td><select name="test18">
+      <option value="1">1번 항목</option>
+      <option value="2">2번 항목</option>
+      <option value="3">3번 항목</option>
+      <option value="4">4번 항목</option>
+      <option value="5">5번 항목</option>
+      <option value="6">6번 항목</option>
+      <option value="7">7번 항목</option>
+      <option value="8">8번 항목</option>
+      <option value="9">9번 항목</option>
+      <option value="10">10번 항목</option>
+      <option value="11">11번 항목</option>
+      <option value="12">12번 항목</option>
+      <option value="13">13번 항목</option>
+      <option value="14">14번 항목</option>
+      <option value="15">15번 항목</option>
+    </select></td>
+  </tr>
+  <tr align="left">
+    <td scope="row"> 테스트용 5 (항목이 100개)</td>
+    <td><select name="test19">
+          <option value="1">1번 항목</option>
+          <option value="2">2번 항목</option>
+          <option value="3">3번 항목</option>
+          <option value="4">4번 항목</option>
+          <option value="5">5번 항목</option>
+          <option value="6">6번 항목</option>
+          <option value="7">7번 항목</option>
+          <option value="8">8번 항목</option>
+          <option value="9">9번 항목</option>
+          <option value="10">10번 항목</option>
+          <option value="11">11번 항목</option>
+          <option value="12">12번 항목</option>
+          <option value="13">13번 항목</option>
+          <option value="14">14번 항목</option>
+          <option value="15">15번 항목</option>
+          <option value="16">16번 항목</option>
+          <option value="17">17번 항목</option>
+          <option value="18">18번 항목</option>
+          <option value="19">19번 항목</option>
+          <option value="20">20번 항목</option>
+          <option value="21">21번 항목</option>
+          <option value="22">22번 항목</option>
+          <option value="23">23번 항목</option>
+          <option value="24">24번 항목</option>
+          <option value="25">25번 항목</option>
+          <option value="26">26번 항목</option>
+          <option value="27">27번 항목</option>
+          <option value="28">28번 항목</option>
+          <option value="29">29번 항목</option>
+          <option value="30">30번 항목</option>
+          <option value="31">31번 항목</option>
+          <option value="32">32번 항목</option>
+          <option value="33">33번 항목</option>
+          <option value="34">34번 항목</option>
+          <option value="35">35번 항목</option>
+          <option value="36">36번 항목</option>
+          <option value="37">37번 항목</option>
+          <option value="38">38번 항목</option>
+          <option value="39">39번 항목</option>
+          <option value="40">40번 항목</option>
+          <option value="41">41번 항목</option>
+          <option value="42">42번 항목</option>
+          <option value="43">43번 항목</option>
+          <option value="44">44번 항목</option>
+          <option value="45">45번 항목</option>
+          <option value="46">46번 항목</option>
+          <option value="47">47번 항목</option>
+          <option value="48">48번 항목</option>
+          <option value="49">49번 항목</option>
+          <option value="50">50번 항목</option>
+          <option value="51">51번 항목</option>
+          <option value="52">52번 항목</option>
+          <option value="53">53번 항목</option>
+          <option value="54">54번 항목</option>
+          <option value="55">55번 항목</option>
+          <option value="56">56번 항목</option>
+          <option value="57">57번 항목</option>
+          <option value="58">58번 항목</option>
+          <option value="59">59번 항목</option>
+          <option value="60">60번 항목</option>
+          <option value="61">61번 항목</option>
+          <option value="62">62번 항목</option>
+          <option value="63">63번 항목</option>
+          <option value="64">64번 항목</option>
+          <option value="65">65번 항목</option>
+          <option value="66">66번 항목</option>
+          <option value="67">67번 항목</option>
+          <option value="68">68번 항목</option>
+          <option value="69">69번 항목</option>
+          <option value="70">70번 항목</option>
+          <option value="71">71번 항목</option>
+          <option value="72">72번 항목</option>
+          <option value="73">73번 항목</option>
+          <option value="74">74번 항목</option>
+          <option value="75">75번 항목</option>
+          <option value="76">76번 항목</option>
+          <option value="77">77번 항목</option>
+          <option value="78">78번 항목</option>
+          <option value="79">79번 항목</option>
+          <option value="80">80번 항목</option>
+          <option value="81">81번 항목</option>
+          <option value="82">82번 항목</option>
+          <option value="83">83번 항목</option>
+          <option value="84">84번 항목</option>
+          <option value="85">85번 항목</option>
+          <option value="86">86번 항목</option>
+          <option value="87">87번 항목</option>
+          <option value="88">88번 항목</option>
+          <option value="89">89번 항목</option>
+          <option value="90">90번 항목</option>
+          <option value="91">91번 항목</option>
+          <option value="92">92번 항목</option>
+          <option value="93">93번 항목</option>
+          <option value="94">94번 항목</option>
+          <option value="95">95번 항목</option>
+          <option value="96">96번 항목</option>
+          <option value="97">97번 항목</option>
+          <option value="98">98번 항목</option>
+          <option value="99">99번 항목</option>
+          <option value="100">100번 항목</option>
+        </select></td>
+  </tr>
+</table>
+<br>
+<table width="650" border="1" cellspacing="0" cellpadding="3">
+  <tr align="left">
+    <td width="632"><p><b>* 아이프레임 테스트</b><br>
+	  &nbsp; - 아이프레임 또는 프레임 안에 셀렉트박스가 있을 경우 옵션 항목 창이 아이프레임 및 프레임을 넘어서 정상적으로<br>
+	  &nbsp;&nbsp;&nbsp;출력 가능함
+	</td>
+  </tr>
+  <tr align="left">
+  <td>
+	<iframe src="./selectbox_iframe.htm" width="200" height="100"></iframe>
+  </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><br>
+</p>
+
+
